@@ -83,7 +83,7 @@ begin
  if m.status<>'accepted' or m.start_at>now() then raise exception 'Сначала дождитесь подтверждённой встречи';end if;
  if new_end is null or new_end<=m.start_at or new_end>now() then raise exception 'Укажите фактическое время окончания';end if;
  else raise exception 'Invalid action';end if;
- if action in('accepted','counter') and coalesce(new_start,m.start_at)<=now() then raise exception 'Выберите будущее время';end if;
+ if ((action='accepted' and m.start_at<=now()) or (action='counter' and (new_start is null or new_start<=now()))) then raise exception 'Выберите будущее время';end if;
  if action='counter' and (new_start is null or new_end is null or new_end<=new_start) then raise exception 'Проверьте время';end if;
  if action='accepted' and exists(select 1 from public.meetings x where x.id<>m.id and x.status='accepted' and x.start_at<coalesce(m.end_at,m.start_at+interval '90 minutes') and coalesce(x.end_at,x.start_at+interval '90 minutes')>m.start_at) then raise exception 'На это время уже есть встреча';end if;
  -- Serialize accepts across distinct rows, preventing two simultaneous overlapping accepts.
