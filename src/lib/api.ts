@@ -1,3 +1,4 @@
+import {disablePush} from './push';
 import type {Data,Profile,Schedule} from '../types';
 const url=import.meta.env.VITE_SUPABASE_URL as string;
 const key=import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
@@ -11,8 +12,8 @@ function save(s:Session|null){session=s;s?localStorage.setItem('ustime.session',
 async function auth(path:string,body:object){const r=await fetch(`${url}/auth/v1/${path}`,{method:'POST',headers:{apikey:key,'Content-Type':'application/json'},body:JSON.stringify(body)});const j=await r.json();if(!r.ok)throw new Error(j.msg||j.error_description||'Не удалось войти. Проверьте пароль.');return j}
 export async function login(slot:number,password:string){const s=await auth('token?grant_type=password',{email:`${slot===1?'me':'her'}@ustime.invalid`,password});save({...s,expires_at:Math.floor(Date.now()/1000)+s.expires_in})}
 async function token(){if(!session)throw new Error('Войдите снова');if(session.expires_at<Date.now()/1000+90){if(!refreshing)refreshing=(async()=>{try{const s=await auth('token?grant_type=refresh_token',{refresh_token:session!.refresh_token});save({...s,expires_at:Math.floor(Date.now()/1000)+s.expires_in})}catch(e){save(null);throw e}finally{refreshing=null}})();await refreshing}return session!.access_token}
-export async function request(path:string,options:RequestInit={}){const t=await token();const r=await fetch(`${url}${path}`,{...options,headers:{apikey:key,Authorization:`Bearer ${t}`,'Content-Type':'application/json',Prefer:'return=representation',...options.headers}});if(!r.ok){let j;try{j=await r.json()}catch{}throw new Error(j?.message||j?.msg||`Сервер недоступен (${r.status})`)}if(r.status===204)return null;return r.json()}
-export async function logout(){try{await request('/auth/v1/logout',{method:'POST'})}finally{save(null)}}
+export async function request(path:string,options:RequestInit={}){const t=await token();const r=await fetch(`${url}${path}`,{...options,headers:{apikey:key,Authorization:`Bearer ${t}`,'Content-Type':'application/json',Prefer:'return=representation',...options.headers}});if(!r.ok){let j;try{j=await r.json()}catch{}throw new Error(j?.message||j?.msg||`Сервер недоступен (${r.status})`)}const body=await r.text();return body?JSON.parse(body):null}
+export async function logout(){await disablePush();try{await request('/auth/v1/logout',{method:'POST'})}finally{save(null)}}
 export async function changePassword(password:string){return request('/auth/v1/user',{method:'PUT',body:JSON.stringify({password})})}
 export const insert=(table:string,body:object)=>request(`/rest/v1/${table}`,{method:'POST',body:JSON.stringify(body)});
 export const patch=(table:string,id:string,body:object)=>request(`/rest/v1/${table}?id=eq.${id}`,{method:'PATCH',body:JSON.stringify(body)});

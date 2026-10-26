@@ -1,5 +1,28 @@
 /* Static shell only. Never cache private API responses, tokens, or photos. */
-const CACHE='ustime-shell-v1';
+const CACHE='ustime-shell-v2';
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(['./','./icon.svg','./icon-192.png','./manifest.webmanifest'])));self.skipWaiting()});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim()});
 self.addEventListener('fetch',event=>{const u=new URL(event.request.url);if(event.request.method!=='GET'||u.origin!==self.location.origin)return;if(event.request.mode==='navigate'){event.respondWith(fetch(event.request).then(r=>{const copy=r.clone();caches.open(CACHE).then(c=>c.put('./',copy));return r}).catch(()=>caches.match('./')));return}if(u.pathname.includes('/assets/')||u.pathname.endsWith('.png')||u.pathname.endsWith('.svg'))event.respondWith(caches.match(event.request).then(hit=>hit||fetch(event.request).then(r=>{if(r.ok){const copy=r.clone();caches.open(CACHE).then(c=>c.put(event.request,copy))}return r}))) });
+self.addEventListener('push', event => {
+  let payload = {};
+  try { payload = event.data?.json() || {}; } catch { /* Always show a visible fallback. */ }
+  event.waitUntil(self.registration.showNotification('UsTime ♡', {
+    body: typeof payload.body === 'string' ? payload.body : 'В нашем доме новое событие.',
+    icon: new URL('icon-192.png', self.registration.scope).href,
+    badge: new URL('icon-192.png', self.registration.scope).href,
+    tag: typeof payload.id === 'string' ? payload.id : 'ustime-update',
+    data: {url: new URL('./#notifications', self.registration.scope).href},
+  }));
+});
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const target = new URL('./#notifications', self.registration.scope).href;
+  event.waitUntil((async () => {
+    const windows = await self.clients.matchAll({type: 'window', includeUncontrolled: true});
+    const existing = windows.find(client => client.url.startsWith(self.registration.scope));
+    if (existing) {
+      await existing.focus();
+      existing.postMessage({type: 'OPEN_NOTIFICATIONS'});
+    } else { await self.clients.openWindow(target); }
+  })());
+});

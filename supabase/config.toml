@@ -1,0 +1,3 @@
+[functions.web-push]
+# The dispatcher checks its own secret; browser requests validate via Auth /user.
+verify_jwt = false
