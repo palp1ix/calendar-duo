@@ -1,3 +1,4 @@
+import {homeMock} from './fixtures/sharedHome';
 import {expect, test, type Page} from '@playwright/test';
 async function setup(page: Page, denied = false) {
   await page.addInitScript(({denied}) => {
@@ -12,12 +13,13 @@ async function setup(page: Page, denied = false) {
     Object.defineProperty(window, 'Notification', {value: {permission: denied ? 'denied' : 'default', requestPermission: async () => {return 'granted';}}});
     Object.defineProperty(navigator, 'serviceWorker', {value: {register: async () => registration, ready: Promise.resolve(registration), getRegistration: async () => registration, addEventListener() {}, removeEventListener() {}}});
   }, {denied});
+  const shared=homeMock([]);
   let saved = false;
   const requests: string[] = [];
   await page.route('**/*.supabase.co/**', async route => {
     const req = route.request(), path = new URL(req.url()).pathname, method = req.method();
     requests.push(`${method} ${path}`);
-    let data: unknown = [];
+    let data: unknown = [];if(path.endsWith('/get_home'))data=shared.snapshot();
     if (path.endsWith('/profiles')) data = [{id: 'me',slot: 1,name: 'Саша',hair: '#000000',outfit: '#76896a',hairstyle: 'short',travel: 35,prep: 10,return_buffer: 0,together_until: null},{id: 'her',slot: 2,name: 'Маша',hair: '#f2d784',outfit: '#bd8271',hairstyle: 'bob',travel: 20,prep: 10,return_buffer: 0,together_until: null}];
     if (path.endsWith('/web-push')) data = method === 'GET' ? {publicKey: 'AQID'} : {queued: true};
     if (path.endsWith('/push_subscriptions')) {
@@ -38,7 +40,7 @@ test('enable, send test, disable and enable again on the current device', async 
   await expect(page.getByText('На этом устройстве включены.')).toBeVisible();
   expect(requests).toContain('POST /rest/v1/push_subscriptions');
   await page.getByRole('button', {name: 'Отправить тестовое уведомление'}).click();
-  await expect(page.getByRole('status')).toContainText('Тестовое уведомление отправлено');
+  await expect(page.locator('.push-settings').getByRole('status')).toContainText('Тестовое уведомление отправлено');
   expect(requests).toContain('POST /functions/v1/web-push');
   await page.getByRole('button', {name: 'Выключить уведомления',exact: true}).click();
   await expect(page.getByText('На этом устройстве выключены.', {exact: true})).toBeVisible();

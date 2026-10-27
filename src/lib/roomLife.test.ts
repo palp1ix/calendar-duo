@@ -17,21 +17,22 @@ describe('meeting-driven home',()=>{
     syncMeetings(h,completed(3));expect(canEnter(h,'greenhouse')).toBe(true);
   });
   it('creates named individuals and grows only for meetings after planting, including while away',()=>{
-    const h=newHome(0);syncMeetings(h,completed(2));
+    const h=newHome(0);syncMeetings(h,completed(3));h.location='greenhouse';
     const p=createPlant(h,'marigold',' Граф Листочек ',0,'one')!;expect(p.name).toBe('Граф Листочек');expect(p.growth).toBe(0);
-    growPlants(h);expect(p.growth).toBe(0);syncMeetings(h,completed(3));expect(p.growth).toBeCloseTo(1/3);
+    growPlants(h);expect(p.growth).toBe(0);syncMeetings(h,completed(4));expect(p.growth).toBeCloseTo(1/3);
     const second=createPlant(h,'marigold','Барон',1,'two')!;expect(second.id).not.toBe(p.id);expect(second.growth).toBe(0);
-    const loaded=loadHome(JSON.stringify(h),999999999,completed(4));expect(loaded.plants[0].growth).toBeCloseTo(2/3);expect(loaded.plants[1].growth).toBeCloseTo(1/3);
+    const loaded=loadHome(JSON.stringify(h),999999999,completed(5));expect(loaded.plants[0].growth).toBeCloseTo(2/3);expect(loaded.plants[1].growth).toBeCloseTo(1/3);
     syncMeetings(loaded,completed(20));expect(loaded.plants.every(p=>p.growth===1)).toBe(true);
   });
-  it('offers a named cactus from the first day and grows it through four meetings',()=>{const h=newHome(0);const cactus=createPlant(h,'cactus','Колючий граф',0,'cactus')!;expect(cactus).toMatchObject({species:'cactus',name:'Колючий граф',growth:0});syncMeetings(h,completed(2));expect(cactus.growth).toBe(.5);syncMeetings(h,completed(4));expect(cactus.growth).toBe(1)});
+  it('offers a named cactus in the unlocked greenhouse and grows it through four new meetings',()=>{const h=newHome(0);syncMeetings(h,completed(3));h.location='greenhouse';const cactus=createPlant(h,'cactus','Колючий граф',0,'cactus')!;expect(cactus).toMatchObject({species:'cactus',name:'Колючий граф',growth:0});syncMeetings(h,completed(5));expect(cactus.growth).toBe(.5);syncMeetings(h,completed(7));expect(cactus.growth).toBe(1)});
   it('validates names, species unlocks, IDs and garden capacity',()=>{
     const h=newHome(0);expect(createPlant(h,'fern','Пушистик',0,'a')).toBeNull();expect(createPlant(h,'marigold',' ',0,'a')).toBeNull();expect(createPlant(h,'marigold','x'.repeat(25),0,'a')).toBeNull();
-    for(let i=0;i<3;i++)expect(createPlant(h,'marigold',`Цветок ${i}`,0,`${i}`)).not.toBeNull();
-    expect(createPlant(h,'marigold','Ещё',0,'3')).toBeNull();syncMeetings(h,completed(3));expect(createPlant(h,'fern','Пушистик',0,'3')).not.toBeNull();expect(createPlant(h,'marigold','Дубликат',0,'3')).toBeNull();expect(plantCapacity(100)).toBe(6);
+    expect(createPlant(h,'marigold','Рано',0,'early')).toBeNull();syncMeetings(h,completed(3));h.location='greenhouse';
+    for(let i=0;i<4;i++)expect(createPlant(h,'marigold',`Цветок ${i}`,0,`${i}`)).not.toBeNull();
+    expect(createPlant(h,'marigold','Ещё',0,'4')).toBeNull();syncMeetings(h,completed(6));expect(createPlant(h,'fern','Пушистик',0,'4')).not.toBeNull();expect(createPlant(h,'marigold','Дубликат',0,'4')).toBeNull();expect(plantCapacity(100)).toBe(6);
   });
   it('persists names, items and damage without adding unseen mischief',()=>{
-    const h=newHome(0);syncMeetings(h,completed(4));toggleItem(h,'books');createPlant(h,'fern','Кусь',0,'fern');h.location='bedroom';const d=catMischief(h,45000,()=>0);expect(d?.location).toBe('bedroom');expect(catMischief(h,45001,()=>0)).toBeNull();
+    const h=newHome(0);syncMeetings(h,completed(4));toggleItem(h,'books');h.location='greenhouse';createPlant(h,'fern','Кусь',0,'fern');h.location='bedroom';const d=catMischief(h,45000,()=>0);expect(d?.location).toBe('bedroom');expect(catMischief(h,45001,()=>0)).toBeNull();
     const loaded=loadHome(JSON.stringify(h),999999);expect(loaded.items.living).toContain('books');expect(loaded.plants[0].name).toBe('Кусь');expect(loaded.damage).toEqual(h.damage);expect(catMischief(loaded,999999,()=>0)).toBeNull();
   });
   it('never damages the same item twice',()=>{const h=newHome(0);for(let n=1;n<=10;n++)catMischief(h,n*200000,()=>0);expect(h.damage).toHaveLength(2);expect(h.mischief).toBe(2)});
@@ -41,10 +42,10 @@ describe('meeting-driven home',()=>{
   });
   it('recovers safely from corrupt progress and recalculates stored growth',()=>{
     for(const raw of ['{','null','{}',JSON.stringify({...newHome(0),plants:[{}]}),JSON.stringify({...newHome(0),items:{}})])expect(loadHome(raw,0)).toEqual(newHome(0));
-    const h=newHome(0);createPlant(h,'marigold','Малыш',0,'one')!.growth=1;expect(loadHome(JSON.stringify(h),1).plants[0].growth).toBe(0);
+    const h=newHome(0);syncMeetings(h,completed(3));h.location='greenhouse';createPlant(h,'marigold','Малыш',0,'one')!.growth=1;expect(loadHome(JSON.stringify(h),1).plants[0].growth).toBe(0);
   });
-  it('keeps activities reachable in every earned room and refuses locked travel',()=>{
-    const w=createWorld();changeLocation(w,'bedroom');expect(w.home.location).toBe('living');syncMeetings(w.home,completed(3));
+  it('previews locked rooms and keeps activities reachable in earned rooms',()=>{
+    const w=createWorld();changeLocation(w,'bedroom');expect(w.home.location).toBe('bedroom');expect(canEnter(w.home,'bedroom')).toBe(false);syncMeetings(w.home,completed(3));
     for(const location of ['living','bedroom','greenhouse'] as const){changeLocation(w,location);expect(w.home.location).toBe(location);for(const a of w.actors)for(const pair of Object.values(stations))for(const target of pair){const goal=nearestFloor(target,location),path=findPath(a,target,location);if(a.x===goal.x&&a.y===goal.y)continue;expect(path.at(-1)).toEqual(goal);expect(path.every(p=>walkable(p,location))).toBe(true)}command(w,0,'wander',{x:240,y:252});tick(w,16,true);expect(w.actors[0]).toMatchObject({x:240,y:252,path:[]})}
   });
   it('avoids consecutive repeated lines in every speech pool',()=>{for(const kind of Object.keys(speech) as (keyof typeof speech)[]){expect(speech[kind].length).toBeGreaterThan(4);expect(nextSpeech(kind,speech[kind][0],()=>0)).not.toBe(speech[kind][0])}});

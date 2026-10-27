@@ -44,4 +44,4 @@ export function roomHit(world:RoomWorld,p:Point):'actor0'|'actor1'|'cat'|'sofa'|
  return walkable(p)?'floor':null;
 }
 
-export function changeLocation(world:RoomWorld,location:Location){if(!canEnter(world.home,location))return;world.home.location=location;world.destination=null;world.actors.forEach((a,i)=>{Object.assign(a,nearestFloor({x:i?354:126,y:222},location));a.path=[];a.activity='wander';a.until=world.time+5000});Object.assign(world.cat,nearestFloor({x:240,y:252},location));world.cat.path=[];}
+export function changeLocation(world:RoomWorld,location:Location){world.home.location=location;world.destination=null;world.actors.forEach((a,i)=>{Object.assign(a,nearestFloor({x:i?354:126,y:222},location));a.path=[];a.activity='wander';a.until=world.time+5000});Object.assign(world.cat,nearestFloor({x:240,y:252},location));world.cat.path=[];}

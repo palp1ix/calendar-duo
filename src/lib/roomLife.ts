@@ -1,31 +1,31 @@
 import type {Meeting} from '../types';
 export type Location = 'living' | 'bedroom' | 'greenhouse';
-export const locations: {id: Location; name: string; icon: string; note: string; unlock: number}[] = [
-  {id: 'living', name: 'Гостиная', icon: '⌂', note: 'Чай, плед и немного хаоса', unlock: 0},
-  {id: 'bedroom', name: 'Спальня', icon: '☾', note: 'Ещё пять минуточек', unlock: 2},
-  {id: 'greenhouse', name: 'Оранжерея', icon: '❧', note: 'Маленькие зелёные победы', unlock: 3},
+export const locations: {id: Location; name: string; note: string; unlock: number}[] = [
+  {id: 'living', name: 'Гостиная', note: 'Чай, плед и немного хаоса', unlock: 0},
+  {id: 'bedroom', name: 'Спальня', note: 'Ещё пять минуточек', unlock: 2},
+  {id: 'greenhouse', name: 'Оранжерея', note: 'Маленькие зелёные победы', unlock: 3},
 ];
 export const catalog = [
-  {id: 'candles', name: 'Тёплые свечи', icon: '🕯', note: 'Для длинных осенних вечеров', unlock: 1},
-  {id: 'cushion', name: 'Осенняя подушка', icon: '🍂', note: 'Мягкое место с кошачьими когтями', unlock: 2},
-  {id: 'pumpkin', name: 'Тыква-фонарь', icon: '🎃', note: 'Светится с наступлением ночи', unlock: 3},
-  {id: 'books', name: 'Стопка книг', icon: '📚', note: 'Почитать или сбросить на пол', unlock: 4},
-  {id: 'ghost', name: 'Привидение', icon: '👻', note: 'Пугает только кошку. Иногда.', unlock: 5},
-  {id: 'garland', name: 'Гирлянда-летучие мыши', icon: '🦇', note: 'Хеллоуин под самым потолком', unlock: 6},
+  {id: 'candles', name: 'Тёплые свечи', note: 'Для длинных осенних вечеров', unlock: 1},
+  {id: 'cushion', name: 'Осенняя подушка', note: 'Мягкое место с кошачьими когтями', unlock: 2},
+  {id: 'pumpkin', name: 'Тыква-фонарь', note: 'Светится с наступлением ночи', unlock: 3},
+  {id: 'books', name: 'Стопка книг', note: 'Почитать или сбросить на пол', unlock: 4},
+  {id: 'ghost', name: 'Привидение', note: 'Пугает только кошку. Иногда.', unlock: 5},
+  {id: 'garland', name: 'Гирлянда-летучие мыши', note: 'Хеллоуин под самым потолком', unlock: 6},
 ] as const;
 export type ItemId = typeof catalog[number]['id'];
 export type PlantId = 'marigold' | 'cactus' | 'mint' | 'pumpkin' | 'fern' | 'lavender' | 'monstera';
-export const seeds: {id: PlantId; name: string; icon: string; color: string; unlock: number; meetings: number; note: string}[] = [
-  {id: 'marigold', name: 'Бархатцы', icon: '🌼', color: '#dc9b42', unlock: 0, meetings: 3, note: 'Маленькое солнце, которое вырастите вместе.'},
-  {id: 'cactus', name: 'Кактус', icon: '🌵', color: '#6b9367', unlock: 0, meetings: 4, note: 'Колючий снаружи. Очень ваш внутри.'},
-  {id: 'mint', name: 'Мята', icon: '🌱', color: '#87a479', unlock: 1, meetings: 3, note: 'Для чая, долгих разговоров и хороших вечеров.'},
-  {id: 'pumpkin', name: 'Тыква', icon: '🎃', color: '#d67d3f', unlock: 2, meetings: 4, note: 'Сначала крошечная. Потом хозяйка всей грядки.'},
-  {id: 'fern', name: 'Папоротник', icon: '🌿', color: '#719462', unlock: 3, meetings: 4, note: 'Зелёный свидетель ваших маленьких приключений.'},
-  {id: 'lavender', name: 'Лаванда', icon: '🪻', color: '#aa8bb0', unlock: 5, meetings: 5, note: 'Для спокойных дней, когда никуда не надо спешить.'},
-  {id: 'monstera', name: 'Монстера', icon: '🪴', color: '#4e7b59', unlock: 8, meetings: 6, note: 'Большие листья. Серьёзные отношения с уютом.'},
+export const seeds: {id: PlantId; name: string; color: string; unlock: number; meetings: number; note: string}[] = [
+  {id: 'marigold', name: 'Бархатцы', color: '#dc9b42', unlock: 0, meetings: 3, note: 'Маленькое солнце, которое вырастите вместе.'},
+  {id: 'cactus', name: 'Кактус', color: '#6b9367', unlock: 0, meetings: 4, note: 'Колючий снаружи. Очень ваш внутри.'},
+  {id: 'mint', name: 'Мята', color: '#87a479', unlock: 1, meetings: 3, note: 'Для чая, долгих разговоров и хороших вечеров.'},
+  {id: 'pumpkin', name: 'Тыква', color: '#d67d3f', unlock: 2, meetings: 4, note: 'Сначала крошечная. Потом хозяйка всей грядки.'},
+  {id: 'fern', name: 'Папоротник', color: '#719462', unlock: 3, meetings: 4, note: 'Зелёный свидетель ваших маленьких приключений.'},
+  {id: 'lavender', name: 'Лаванда', color: '#aa8bb0', unlock: 5, meetings: 5, note: 'Для спокойных дней, когда никуда не надо спешить.'},
+  {id: 'monstera', name: 'Монстера', color: '#4e7b59', unlock: 8, meetings: 6, note: 'Большие листья. Серьёзные отношения с уютом.'},
 ];
 export type GardenPlant = {id: string; species: PlantId; name: string; plantedAt: number; baseline: string[]; growth: number};
-export type Damage = {location: Location; target: 'sofa' | 'pot' | ItemId; text: string};
+export type Damage = {location: Location; id?: string; target: 'sofa' | 'pot' | ItemId; text: string};
 export type HomeLife = {
   version: 2; location: Location; items: Record<Location, ItemId[]>; plants: GardenPlant[];
   completedMeetings: string[]; damage: Damage[]; mischief: number; nextMischiefAt: number; lastEvent: string;
@@ -50,7 +50,7 @@ export function syncMeetings(home: HomeLife, meetings: Pick<Meeting,'id'|'status
 }
 export function createPlant(home: HomeLife, species: PlantId, name: string, now=Date.now(), id:string=crypto.randomUUID()): GardenPlant | null {
   const seed=seeds.find(s=>s.id===species), cleaned=name.trim();
-  if(!seed||home.completedMeetings.length<seed.unlock||!cleaned||cleaned.length>24||home.plants.length>=plantCapacity(home.completedMeetings.length)||home.plants.some(p=>p.id===id))return null;
+  if(!seed||!canEnter(home,'greenhouse')||home.location!=='greenhouse'||home.completedMeetings.length<seed.unlock||!cleaned||cleaned.length>24||home.plants.length>=plantCapacity(home.completedMeetings.length)||home.plants.some(p=>p.id===id))return null;
   const plant={id,species,name:cleaned,plantedAt:now,baseline:[...home.completedMeetings],growth:0};home.plants.push(plant);return plant;
 }
 export function plantStage(growth: number) {
@@ -65,7 +65,7 @@ export function toggleItem(home: HomeLife, id: ItemId) {
 }
 export function canEnter(home: HomeLife, location: Location) {return home.completedMeetings.length >= locations.find(l=>l.id===location)!.unlock}
 export function nextReward(count: number) {
-  return [...catalog.map(i=>({name:i.name,icon:i.icon,unlock:i.unlock})),...locations.filter(l=>l.unlock).map(l=>({name:l.name,icon:l.icon,unlock:l.unlock})),...seeds.filter(s=>s.unlock).map(s=>({name:`Семена: ${s.name}`,icon:s.icon,unlock:s.unlock}))].filter(r=>r.unlock>count).sort((a,b)=>a.unlock-b.unlock)[0];
+  return [...catalog.map(i=>({name:i.name,icon:i.id,unlock:i.unlock})),...locations.filter(l=>l.unlock).map(l=>({name:l.name,icon:l.id,unlock:l.unlock})),...seeds.filter(s=>s.unlock).map(s=>({name:`Семена: ${s.name}`,icon:s.id,unlock:s.unlock}))].filter(r=>r.unlock>count).sort((a,b)=>a.unlock-b.unlock)[0];
 }
 export function catMischief(home: HomeLife, now = Date.now(), random = Math.random): Damage | null {
   if(now<home.nextMischiefAt)return null;
@@ -90,7 +90,7 @@ export function loadHome(raw: string | null, now = Date.now(), meetings: Pick<Me
       // Keep the old house, but replace time/watering progress with meeting progress.
       if(locations.some(l=>l.id===h.location)&&canEnter(fallback,h.location))fallback.location=h.location;
       for(const l of locations)if(Array.isArray(h.items?.[l.id]))fallback.items[l.id]=catalog.filter(i=>i.unlock<=fallback.completedMeetings.length&&h.items[l.id].includes(i.id)).map(i=>i.id);
-      if(Array.isArray(h.plants))for(const p of h.plants.slice(0,3))if(seeds.some(s=>s.id===p.id))createPlant(fallback,p.id,seeds.find(s=>s.id===p.id)!.name,now,`legacy-${p.id}`);
+      if(Array.isArray(h.plants))for(const p of h.plants.slice(0,3))if(seeds.some(s=>s.id===p.id))fallback.plants.push({id:`legacy-${p.id}`,species:p.id,name:seeds.find(s=>s.id===p.id)!.name,plantedAt:now,baseline:[...fallback.completedMeetings],growth:0});
       return fallback;
     }
     if(h?.version!==2||!locations.some(l=>l.id===h.location)||!h.items||!locations.every(l=>Array.isArray(h.items[l.id])&&h.items[l.id].length<=catalog.length&&new Set(h.items[l.id]).size===h.items[l.id].length&&h.items[l.id].every((id:unknown)=>catalog.some(i=>i.id===id)))
