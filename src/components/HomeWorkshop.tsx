@@ -1,0 +1,17 @@
+import {catalog, plantCapacity, plantStage, seeds, type HomeLife, type ItemId} from '../lib/roomLife';
+export default function HomeWorkshop({home,panel,onPanel,onItem,onCreate,onRepair,storageError}:{
+  home:HomeLife;panel:'decor'|'garden'|null;onPanel:(panel:'decor'|'garden'|null)=>void;
+  onItem:(id:ItemId)=>void;onCreate:()=>void;onRepair:()=>void;storageError:boolean;
+}){
+  const damage=home.damage.filter(d=>d.location===home.location),count=home.completedMeetings.length;
+  return <div className="home-workshop">
+    <div className="workshop-toolbar"><button aria-expanded={panel==='decor'} aria-controls="home-workshop-panel" onClick={()=>onPanel(panel==='decor'?null:'decor')}>✧ Украшения <small>{catalog.filter(i=>i.unlock<=count).length}/{catalog.length}</small></button><button aria-expanded={panel==='garden'} aria-controls="home-workshop-panel" onClick={()=>onPanel(panel==='garden'?null:'garden')}>❧ Наш сад <small>{home.plants.length} растений</small></button><button onClick={onCreate}>＋ Посадить растение</button>{damage.length>0&&<button className="repair-button" onClick={onRepair}>⚒ Починить ({damage.length})</button>}</div>
+    {panel&&<div id="home-workshop-panel" className="workshop-panel"><div className="workshop-heading"><div><b>{panel==='decor'?'Уют, который вы заслужили':'Растём вместе'}</b><p>{panel==='decor'?'Завершайте встречи, открывайте украшения и выбирайте им место.':'Одна завершённая встреча — один шаг роста каждому растению.'}</p></div><button aria-label="Закрыть обустройство" onClick={()=>onPanel(null)}>×</button></div>
+      {panel==='decor'?<div className="decor-grid">{catalog.map(item=>{const placed=home.items[home.location].includes(item.id),locked=count<item.unlock;return <button key={item.id} disabled={locked} aria-pressed={placed} onClick={()=>onItem(item.id)}><span className="decor-icon">{item.icon}</span><span><b>{item.name}</b><small>{item.note}</small><em>{locked?`◇ Нужно ${item.unlock} встреч · ${count}/${item.unlock}`:placed?'✓ В комнате · убрать':'+ Поставить в комнату'}</em></span></button>})}</div>:<>
+        {!home.plants.length?<div className="garden-empty"><span>❧</span><h3>У вашей истории ещё нет листочков</h3><p>Посади первое растение и дай ему имя.<br/>Оно будет расти с каждой новой встречей.</p><button className="secondary" onClick={onCreate}>＋ Создать первое растение</button></div>:<div className="garden-grid">{home.plants.map(p=>{const seed=seeds.find(s=>s.id===p.species)!,steps=Math.min(seed.meetings,home.completedMeetings.filter(id=>!p.baseline.includes(id)).length);return <div className="garden-plant" key={p.id}><div><span>{seed.icon}</span><b>{p.name}</b><small>{seed.name} · {plantStage(p.growth)}</small></div><progress aria-label={`Рост: ${p.name}`} value={p.growth} max={1}/><div className="garden-progress"><small>{Math.round(p.growth*100)}% · {steps}/{seed.meetings} встреч после посадки</small><span>{p.growth>=1?'✧ Выросло!':'♡ Ждёт вашей встречи'}</span></div></div>})}</div>}
+        <p className="garden-capacity">{home.plants.length}/{plantCapacity(count)} мест в саду · +1 место за каждые 3 встречи, до 6</p></>}
+      <p className="workshop-footnote">{storageError?'Браузер не разрешил сохранение. Прогресс доступен до закрытия страницы.':'Имена растений и расстановка сохраняются в этом браузере. Встречи берём из вашей общей истории.'}</p>
+    </div>}
+    <div className="cat-journal"><span aria-hidden="true">♠</span><p>{home.lastEvent}</p><small>Пакостей: {home.mischief}</small></div>
+  </div>;
+}

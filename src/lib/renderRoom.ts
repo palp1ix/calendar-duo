@@ -1,3 +1,4 @@
+import {drawScenery,drawDecor} from './roomScenery';
 import type {Profile} from '../types';
 import type {RoomWorld,Actor} from './room';
 export function renderRoom(ctx:CanvasRenderingContext2D,world:RoomWorld,profiles:Profile[],reduced:boolean){
@@ -35,13 +36,14 @@ ctx.clearRect(0,0,480,300);rect(0,0,480,300,'#e7d9bf');
  // foreground TV, cabinet, books, black cat
  box(315,238,84,25,'#aa8760');rect(319,243,33,16,'#bc9d72');rect(357,243,37,16,'#bc9d72');rect(331,225,55,4,'#5a6556');rect(352,223,9,15,'#5a6556');box(326,190,66,40,'#74876d','#52604e');rect(331,195,56,28,world.tv?'#d4c99b':'#b6c6ad');rect(340,204,20,13,'#96ac94');rect(361,200,19,17,'#a6b89e');if(world.tv)heart(354,204);
  // Details react to the room, not to unrelated React refreshes.
- if(world.night){rect(184,29,78,51,'#788591');rect(224,28,3,54,'#cbbfac');rect(182,53,82,3,'#cbbfac');rect(245,35,8,8,'#f4df9f');rect(243,33,6,6,'#788591');for(const[x,y]of [[193,36],[210,44],[235,66]])rect(x,y,2,2,'#f8e7bd');ctx.fillStyle='#34454b25';ctx.fillRect(12,15,448,256)}
+ drawScenery(ctx,world,reduced);
  // A string of little bulbs; the cosy button switches them on, too.
  for(let i=0;i<11;i++){const x=149+i*15,y=17+Math.sin(i/10*Math.PI)*8;rect(x,y,16,1,'#ac9a77');rect(x+7,y+2,3,4,world.lamp?'#fbe6a4':'#c2b897')}
- if(world.tv){rect(333,199,50,3,'#f0dfb0');const frame=Math.floor(world.time/1500)%3;rect(335+frame*12,213,8,7,'#99aa83');rect(353,203,8,6,'#c78d7a');if(!reduced&&Math.floor(step)%12<4){rect(399,196,2,7,'#a89874');rect(401,194,4,2,'#a89874')}}
+ if(world.home.location==='living'&&world.tv){rect(333,199,50,3,'#f0dfb0');const frame=Math.floor(world.time/1500)%3;rect(335+frame*12,213,8,7,'#99aa83');rect(353,203,8,6,'#c78d7a');if(!reduced&&Math.floor(step)%12<4){rect(399,196,2,7,'#a89874');rect(401,194,4,2,'#a89874')}}
  if(world.lamp){ctx.fillStyle='#ffe3a326';ctx.beginPath();ctx.ellipse(333,167,34,12,0,0,Math.PI*2);ctx.fill()}
  // Steam has a quiet life of its own.
  for(let i=0;i<2;i++){const phase=reduced?0:(world.time/350+i*3)%8;rect(73+i*4,74-phase,1,3,'#f8eed6')}
+ drawDecor(ctx,world,reduced);
  if(world.destination&&world.destination.until>world.time){const p=world.destination;rect(p.x-5,p.y,11,2,'#f8eac1');rect(p.x,p.y-5,2,11,'#f8eac1');rect(p.x-3,p.y-3,7,7,'#8c9d7655')}
  function character(a:Actor){const p=profiles[a.id],x=a.x,seated=!a.path.length&&a.activity==='sofa',dancing=!a.path.length&&a.activity==='dance'&&world.partyUntil>world.time;
  const walking=a.path.length>0,phase=reduced?0:Math.sin(a.walkPhase*.42),bounce=reduced?0:dancing?Math.abs(Math.sin(world.time/120))*5:walking?Math.abs(phase)*2:Math.sin(world.time/600+a.id)*.5;
@@ -73,7 +75,7 @@ ctx.clearRect(0,0,480,300);rect(0,0,480,300,'#e7d9bf');
  rect(head-5,y-18,11,11,'#111113');rect(head-5,y-22,3,5,'#111113');rect(head+3,y-22,3,5,'#111113');
  rect(head-4,y-20,1,2,'#a37b79');rect(head+4,y-20,1,2,'#a37b79');
  const blink=!reduced&&Math.floor(world.time/130)%37===0;
- rect(head-3,y-14,2,blink?1:2,'#c8d48b');rect(head+2,y-14,2,blink?1:2,'#c8d48b');rect(head,y-11,1,1,'#c2988e');
+ rect(head-3,y-14,3,1,'#cfbd6e');rect(head+2,y-14,3,1,'#cfbd6e');rect(head-4,y-17,3,1,'#817764');rect(head+3,y-17,3,1,'#817764');if(blink)rect(head-2,y-14,1,1,'#171719');rect(head,y-11,1,1,'#c2988e');
  rect(head-8,y-11,3,1,'#89857b');rect(head+6,y-11,3,1,'#89857b');
  }
  const layers=[...world.actors.map(a=>({y:a.y,draw:()=>character(a)})),{y:world.cat.y,draw:cat}];

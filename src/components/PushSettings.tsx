@@ -31,7 +31,7 @@ export default function PushSettings() {
   }
   return <section className="push-settings" aria-label="Уведомления на устройстве">
     <h3>Уведомления на телефоне</h3>
-    <p className="muted">Приглашения, ответы, воспоминания и знаки внимания — даже когда UsTime закрыт. Настройка действует на этом устройстве.</p>
+    <p className="muted">Приглашения, ответы, воспоминания и знаки внимания — даже когда UsTime закрыт. Напоминания: за час до встречи, через 12 часов после начала незавершённой встречи и после 14 дней без встреч (не чаще раза в неделю). Настройка действует на этом устройстве.</p>
     {unavailable ? <p>{unavailable}</p> : <>
       <p>{enabled ? 'На этом устройстве включены.' : Notification.permission === 'denied' ? 'Доступ запрещён. Разрешите уведомления для UsTime в настройках телефона или браузера, затем вернитесь сюда.' : 'На этом устройстве выключены.'}</p>
       {registration && key ? <button className="secondary full" disabled={busy || (!enabled && Notification.permission === 'denied')} onClick={toggle}>{busy ? 'Подключаем…' : enabled ? 'Выключить уведомления' : 'Включить уведомления'}</button> : <button className="secondary full" disabled={busy} onClick={load}>{busy ? 'Подключаем…' : 'Повторить подключение'}</button>}
