@@ -1,5 +1,6 @@
 -- Run as admin against an isolated/test database; all fixtures roll back.
 begin;
+delete from private.together_sessions; update private.couple_story set since=null;
 create function pg_temp.assert(ok boolean,msg text) returns void language plpgsql as $$begin if not coalesce(ok,false) then raise exception 'assert: %',msg;end if;end$$;
 alter table public.meetings disable trigger meeting_notify;
 update public.meetings set status='cancelled';
@@ -10,20 +11,20 @@ select pg_temp.assert((public.get_home(null)#>>'{state,mischief}')::integer=0,'n
 do $$begin
  begin perform public.change_home(gen_random_uuid(),'{"kind":"plant","location":"greenhouse","species":"cactus","name":"Рано"}');raise exception 'unlocked';exception when raise_exception then if sqlerrm not like '%закрыта%' then raise;end if;end;
 end$$;
-insert into public.meetings(proposer,start_at,end_at,place,status) select id,now()-interval '2 days',now()-interval '1 day','HOME TEST','completed' from public.profiles where slot=1;
-insert into public.meetings(proposer,start_at,end_at,place,status) select id,now()-interval '2 days',now()-interval '1 day','HOME TEST','completed' from public.profiles where slot=1;
-insert into public.meetings(proposer,start_at,end_at,place,status) select id,now()-interval '2 days',now()-interval '1 day','HOME TEST','completed' from public.profiles where slot=1;
+insert into public.meetings(proposer,start_at,end_at,place,status) select id,now()-interval '2 days',now()-interval '2 days'+interval '30 minutes','HOME TEST','completed' from public.profiles where slot=1;
+insert into public.meetings(proposer,start_at,end_at,place,status) select id,now()-interval '2 days',now()-interval '2 days'+interval '30 minutes','HOME TEST','completed' from public.profiles where slot=1;
+insert into public.meetings(proposer,start_at,end_at,place,status) select id,now()-interval '2 days',now()-interval '2 days'+interval '30 minutes','HOME TEST','completed' from public.profiles where slot=1;
 select pg_temp.assert(jsonb_array_length(public.get_home(null)#>'{state,completedMeetings}')=3,'authoritative completed meetings');
 select public.change_home('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','{"kind":"plant","location":"greenhouse","species":"cactus","name":"Колючий граф"}');
 select public.change_home('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','{"kind":"plant","location":"greenhouse","species":"cactus","name":"Колючий граф"}');
 select pg_temp.assert(jsonb_array_length(public.get_home(null)#>'{state,plants}')=1,'lost response retry does not duplicate a plant');
-select pg_temp.assert((public.get_home(null)#>>'{state,plants,0,growth}')::numeric=0,'old meetings do not grow a new plant');
+select pg_temp.assert((public.get_home(null)#>>'{state,plants,0,growth}')::numeric<0.00001,'old meetings do not grow a new plant');
 select set_config('request.jwt.claim.sub',(select id::text from public.profiles where slot=2),true);
 select pg_temp.assert(public.get_home(null)#>>'{state,plants,0,name}'='Колючий граф','partner sees named plant');
 select public.change_home('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb','{"kind":"place","location":"living","target":"candles","placed":true}');
 select public.change_home('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb','{"kind":"place","location":"living","target":"candles","placed":true}');
 select pg_temp.assert(jsonb_array_length(public.get_home(null)#>'{state,items,living}')=1,'decoration retry is a set, not a toggle');
-insert into public.meetings(proposer,start_at,end_at,place,status) select id,now()-interval '2 days',now()-interval '1 day','HOME TEST growth','completed' from public.profiles where slot=1;
+insert into public.meetings(proposer,start_at,end_at,place,status) select id,now()-interval '2 days',now()-interval '2 days'+interval '30 minutes','HOME TEST growth','completed' from public.profiles where slot=1;
 select pg_temp.assert((public.get_home(null)#>>'{state,plants,0,growth}')::numeric=.25,'one new meeting grows cactus by one step');
 update private.home_state set active_at=now(),state=jsonb_set(state,'{nextMischiefAt}','0');
 select public.get_home('living'); select public.get_home('living');

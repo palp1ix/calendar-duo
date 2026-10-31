@@ -1,3 +1,4 @@
+import type {Story} from '../lib/story';
 import type {HomeSnapshot} from '../lib/home';
 export type Profile={id:string;slot:number;name:string;hair:string;outfit:string;hairstyle:string;travel:number;prep:number;return_buffer:number;together_until:string|null};
 export type Schedule={id:string;owner:string;day:string;start_time:string;end_time:string;kind:string;state:'available'|'unavailable'|'unknown';weekdays:number[];interval_weeks:number;until_day:string|null;exceptions:string[];is_private:boolean;title:string|null};
@@ -5,5 +6,5 @@ export type Meeting={id:string;proposer:string;start_at:string;end_at:string|nul
 export type Memory={id:string;meeting_id:string;author:string;note:string;moment:string;label:string;photo:string|null;created_at:string};
 export type Interaction={id:string;actor:string;kind:string;created_at:string};
 export type Notice={id:string;recipient:string;body:string;read_at:string|null;created_at:string};
-export type Data={home:HomeSnapshot|null;profiles:Profile[];schedules:Schedule[];meetings:Meeting[];memories:Memory[];interactions:Interaction[];notifications:Notice[]};
-export const emptyData:Data={home:null,profiles:[],schedules:[],meetings:[],memories:[],interactions:[],notifications:[]};
+export type Data={story?:Story|null;home:HomeSnapshot|null;profiles:Profile[];schedules:Schedule[];meetings:Meeting[];memories:Memory[];interactions:Interaction[];notifications:Notice[]};
+export const emptyData:Data={story:null,home:null,profiles:[],schedules:[],meetings:[],memories:[],interactions:[],notifications:[]};

@@ -1,0 +1,14 @@
+import {afterEach,describe,expect,it,vi} from 'vitest';
+import {PhotoCache} from './photoCache';
+import {photoSize} from './preparePhoto';
+afterEach(()=>vi.useRealTimers());
+const blob=()=>new Blob(['photo'],{type:'image/jpeg'});
+describe('private photo cache',()=>{
+ it('deduplicates concurrent loads and reuses downloaded bytes',async()=>{const cache=new PhotoCache(),load=vi.fn(async()=>blob());const [a,b]=await Promise.all([cache.get('one','p',load),cache.get('one','p',load)]);expect(a).toBe(b);expect(await cache.get('one','p',load)).toBe(a);expect(load).toHaveBeenCalledTimes(1)});
+ it('separates users and expires after the allowed lifetime',async()=>{vi.useFakeTimers();const cache=new PhotoCache(100,1000),load=vi.fn(async()=>blob());await cache.get('one','p',load);await cache.get('two','p',load);expect(load).toHaveBeenCalledTimes(2);vi.advanceTimersByTime(1001);await cache.get('one','p',load);expect(load).toHaveBeenCalledTimes(3)});
+ it('evicts least recently used photos to stay within byte and entry limits',()=>{const cache=new PhotoCache(10,1000,2);cache.put('one','a',blob());cache.put('one','b',blob());cache.peek('one','a');cache.put('one','c',blob());expect(cache.peek('one','a')).toBeTruthy();expect(cache.peek('one','b')).toBeNull();expect(cache.peek('one','c')).toBeTruthy();cache.put('one','large',new Blob(['a'.repeat(11)]));expect(cache.peek('one','large')).toBeNull()});
+ it('does not cache failed downloads, so retry can succeed',async()=>{const cache=new PhotoCache(),load=vi.fn().mockRejectedValueOnce(new Error('offline')).mockResolvedValue(blob());await expect(cache.get('one','p',load)).rejects.toThrow('offline');await expect(cache.get('one','p',load)).resolves.toBeInstanceOf(Blob);expect(load).toHaveBeenCalledTimes(2)});
+ it('clears cached bytes and rejects late responses after logout',async()=>{const cache=new PhotoCache();let finish!:(b:Blob)=>void;let signal!:AbortSignal;const task=cache.get('one','p',s=>{signal=s;return new Promise(r=>finish=r)});const failure=expect(task).rejects.toThrow('Сессия завершена');cache.clear();expect(signal.aborted).toBe(true);finish(blob());await failure;expect(cache.peek('one','p')).toBeNull()});
+ it('limits concurrent downloads and cancels queued ones on logout',async()=>{const cache=new PhotoCache(1000,1000,10,1);let finish!:(b:Blob)=>void;const first=cache.get('one','a',()=>new Promise(r=>finish=r));const queued=vi.fn(async()=>blob());const second=cache.get('one','b',queued);expect(queued).not.toHaveBeenCalled();const failures=[expect(first).rejects.toThrow(),expect(second).rejects.toThrow()];cache.clear();finish(blob());await Promise.all(failures);expect(queued).not.toHaveBeenCalled()});
+});
+it('resizes both orientations proportionally and never upscales',()=>{expect(photoSize(4000,3000)).toEqual({width:1600,height:1200});expect(photoSize(3000,4000)).toEqual({width:1200,height:1600});expect(photoSize(320,240)).toEqual({width:320,height:240})});

@@ -27,7 +27,7 @@ export const seeds: {id: PlantId; name: string; color: string; unlock: number; m
 export type GardenPlant = {id: string; species: PlantId; name: string; plantedAt: number; baseline: string[]; growth: number};
 export type Damage = {location: Location; id?: string; target: 'sofa' | 'pot' | ItemId; text: string};
 export type HomeLife = {
-  version: 2; location: Location; items: Record<Location, ItemId[]>; plants: GardenPlant[];
+  progressUnits?: number; progressValue?: number; version: 2; location: Location; items: Record<Location, ItemId[]>; plants: GardenPlant[];
   completedMeetings: string[]; damage: Damage[]; mischief: number; nextMischiefAt: number; lastEvent: string;
 };
 export function newHome(now = Date.now()): HomeLife {
@@ -63,7 +63,8 @@ export function toggleItem(home: HomeLife, id: ItemId) {
   if(index>=0)items.splice(index,1);else items.push(id);
   home.damage=home.damage.filter(d=>!(d.location===home.location&&d.target===id));return true;
 }
-export function canEnter(home: HomeLife, location: Location) {return home.completedMeetings.length >= locations.find(l=>l.id===location)!.unlock}
+export function homeUnits(home:HomeLife){return Math.max(home.completedMeetings.length,home.progressUnits||0)}
+export function canEnter(home: HomeLife, location: Location) {return homeUnits(home) >= locations.find(l=>l.id===location)!.unlock}
 export function nextReward(count: number) {
   return [...catalog.map(i=>({name:i.name,icon:i.id,unlock:i.unlock})),...locations.filter(l=>l.unlock).map(l=>({name:l.name,icon:l.id,unlock:l.unlock})),...seeds.filter(s=>s.unlock).map(s=>({name:`Семена: ${s.name}`,icon:s.id,unlock:s.unlock}))].filter(r=>r.unlock>count).sort((a,b)=>a.unlock-b.unlock)[0];
 }
