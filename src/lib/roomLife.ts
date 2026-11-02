@@ -11,10 +11,13 @@ export const catalog = [
   {id: 'pumpkin', name: 'Тыква-фонарь', note: 'Светится с наступлением ночи', unlock: 3},
   {id: 'books', name: 'Стопка книг', note: 'Почитать или сбросить на пол', unlock: 4},
   {id: 'ghost', name: 'Привидение', note: 'Пугает только кошку. Иногда.', unlock: 5},
+  {id: 'picture', name: 'Картина с горами', note: 'Напоминание о прогулках вдвоём', unlock: 7},
+  {id: 'rug', name: 'Лоскутный коврик', note: 'Мягкое место для отдыха', unlock: 9},
+  {id: 'lantern', name: 'Бумажный фонарь', note: 'Тёплый свет для долгих вечеров', unlock: 11},
   {id: 'garland', name: 'Гирлянда-летучие мыши', note: 'Хеллоуин под самым потолком', unlock: 6},
 ] as const;
 export type ItemId = typeof catalog[number]['id'];
-export type PlantId = 'marigold' | 'cactus' | 'mint' | 'pumpkin' | 'fern' | 'lavender' | 'monstera';
+export type PlantId = 'marigold' | 'cactus' | 'mint' | 'pumpkin' | 'fern' | 'lavender' | 'monstera' | 'chamomile' | 'rosemary' | 'sunflower';
 export const seeds: {id: PlantId; name: string; color: string; unlock: number; meetings: number; note: string}[] = [
   {id: 'marigold', name: 'Бархатцы', color: '#dc9b42', unlock: 0, meetings: 3, note: 'Маленькое солнце, которое вырастите вместе.'},
   {id: 'cactus', name: 'Кактус', color: '#6b9367', unlock: 0, meetings: 4, note: 'Колючий снаружи. Очень ваш внутри.'},
@@ -22,6 +25,9 @@ export const seeds: {id: PlantId; name: string; color: string; unlock: number; m
   {id: 'pumpkin', name: 'Тыква', color: '#d67d3f', unlock: 2, meetings: 4, note: 'Сначала крошечная. Потом хозяйка всей грядки.'},
   {id: 'fern', name: 'Папоротник', color: '#719462', unlock: 3, meetings: 4, note: 'Зелёный свидетель ваших маленьких приключений.'},
   {id: 'lavender', name: 'Лаванда', color: '#aa8bb0', unlock: 5, meetings: 5, note: 'Для спокойных дней, когда никуда не надо спешить.'},
+  {id: 'chamomile', name: 'Ромашка', color: '#f2e5bd', unlock: 4, meetings: 3, note: 'Для тихих солнечных дней.'},
+  {id: 'rosemary', name: 'Розмарин', color: '#718e75', unlock: 7, meetings: 4, note: 'Ароматная веточка для домашней кухни.'},
+  {id: 'sunflower', name: 'Подсолнух', color: '#e5b849', unlock: 10, meetings: 5, note: 'Маленькое солнце в вашей оранжерее.'},
   {id: 'monstera', name: 'Монстера', color: '#4e7b59', unlock: 8, meetings: 6, note: 'Большие листья. Серьёзные отношения с уютом.'},
 ];
 export type GardenPlant = {id: string; species: PlantId; name: string; plantedAt: number; baseline: string[]; growth: number};

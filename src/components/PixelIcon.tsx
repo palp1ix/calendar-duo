@@ -1,13 +1,13 @@
 const colors={leaf:'#6f865a',light:'#a8b783',earth:'#bd825d',gold:'#d8ad62',ink:'#625b46',cream:'#f7edcf',pink:'#c58f8a'};
 export default function PixelIcon({name,size=24}:{name:string;size?:number}){
  const r=(x:number,y:number,w:number,h:number,c:keyof typeof colors,key?:number)=><rect key={key} x={x} y={y} width={w} height={h} fill={colors[c]}/>;
- const plant=['marigold','cactus','mint','fern','lavender','monstera'].includes(name);
+ const plant=['marigold','cactus','mint','fern','lavender','monstera','chamomile','rosemary','sunflower'].includes(name);
  let art;
  if(plant)art=<>
   {r(4,12,8,3,'earth')}{r(3,11,10,2,'gold')}{r(7,4,2,7,'leaf')}
   {name==='cactus'?<>{r(5,3,6,8,'leaf')}{r(2,5,3,4,'leaf')}{r(2,3,2,5,'leaf')}{r(11,7,3,3,'leaf')}{r(12,5,2,5,'leaf')}{r(7,4,1,6,'light')}</>:<>
    {r(2,6,5,3,'leaf')}{r(9,4,5,3,'light')}{r(3,4,3,2,'light')}
-   {['marigold','lavender'].includes(name)&&<>{r(5,1,6,4,name==='lavender'?'pink':'gold')}{r(7,2,2,2,'cream')}</>}
+   {['marigold','lavender','chamomile','sunflower'].includes(name)&&<>{r(5,1,6,4,name==='lavender'?'pink':name==='chamomile'?'cream':'gold')}{r(7,2,2,2,'cream')}</>}
   </>}
  </>;
  else if(name==='pumpkin')art=<>{r(2,5,12,8,'earth')}{r(4,3,8,12,'gold')}{r(7,1,2,3,'leaf')}{r(4,7,2,2,'ink')}{r(10,7,2,2,'ink')}{r(6,11,4,1,'cream')}</>;
@@ -16,6 +16,9 @@ export default function PixelIcon({name,size=24}:{name:string;size?:number}){
  else if(name==='ghost')art=<>{r(5,1,6,2,'cream')}{r(3,3,10,10,'cream')}{r(3,13,3,2,'cream')}{r(10,13,3,2,'cream')}{r(5,6,2,2,'ink')}{r(10,6,2,2,'ink')}</>;
  else if(name==='cushion')art=<>{r(2,3,12,10,'earth')}{r(3,4,10,8,'gold')}{r(7,7,2,2,'earth')}</>;
  else if(name==='garland')art=<>{r(1,2,14,1,'earth')}{[3,8,13].map(x=><g key={x}>{r(x-2,6,5,2,'ink')}{r(x,5,1,6,'ink')}{r(x-3,5,1,2,'ink')}{r(x+3,5,1,2,'ink')}</g>)}</>;
+ else if(name==='picture')art=<>{r(2,2,12,12,'earth')}{r(4,4,8,8,'cream')}{r(4,9,3,3,'leaf')}{r(7,7,5,5,'light')}{r(10,5,2,2,'gold')}</>;
+ else if(name==='rug')art=<>{r(1,5,14,7,'earth')}{r(3,6,10,5,'gold')}{r(5,8,6,1,'cream')}</>;
+ else if(name==='lantern')art=<>{r(5,1,6,2,'ink')}{r(3,3,10,10,'gold')}{r(5,4,6,8,'cream')}{r(5,13,6,2,'earth')}</>;
  else if(name==='lock')art=<>{r(5,2,6,2,'gold')}{r(4,4,2,4,'gold')}{r(10,4,2,4,'gold')}{r(3,7,10,8,'earth')}{r(7,10,2,3,'cream')}</>;
  else if(name==='living'||name==='home')art=<>{r(3,7,10,8,'leaf')}{r(5,5,6,2,'leaf')}{r(7,3,2,2,'leaf')}{r(6,10,4,5,'cream')}</>;
  else if(name==='bedroom')art=<>{r(1,7,14,5,'earth')}{r(1,5,2,9,'ink')}{r(13,10,2,4,'ink')}{r(4,5,4,3,'cream')}{r(8,8,5,3,'light')}</>;

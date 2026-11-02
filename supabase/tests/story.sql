@@ -5,6 +5,7 @@ insert into public.profiles(id,slot,name) values('11111111-1111-4111-8111-111111
 select set_config('request.jwt.claim.sub','11111111-1111-4111-8111-111111111111',true);
 set local role authenticated;
 select public.story_action('start','33333333-3333-4333-8333-333333333333');
+do $$begin if (select (public.story_action()#>>'{sessions,0,started_at}') is null) then raise exception 'Session did not start immediately'; end if; end$$;
 select public.story_action('start','33333333-3333-4333-8333-333333333333');
 do $$begin
  begin perform public.story_action('accept','33333333-3333-4333-8333-333333333333');raise exception 'Self-confirmation allowed';
@@ -12,6 +13,7 @@ do $$begin
  begin perform public.story_action('start','44444444-4444-4444-8444-444444444444');raise exception 'Duplicate active request allowed';
  exception when others then if sqlerrm<>'Встреча уже начата или ждёт подтверждения' then raise;end if;end;
 end$$;
+insert into public.memories(author,note,memory_date) values('11111111-1111-4111-8111-111111111111','Незабываемый день',current_date);
 select public.story_action('letter','55555555-5555-4555-8555-555555555555','{"body":"Привет, любимый человек"}');
 select public.story_action('letter','55555555-5555-4555-8555-555555555555','{"body":"Привет, любимый человек"}');
 do $$begin
@@ -19,8 +21,6 @@ do $$begin
  exception when others then if sqlerrm<>'Открыть записку может только получатель' then raise;end if;end;
 end$$;
 select set_config('request.jwt.claim.sub','22222222-2222-4222-8222-222222222222',true);
-select public.story_action('accept','33333333-3333-4333-8333-333333333333');
-select public.story_action('accept','33333333-3333-4333-8333-333333333333');
 select public.story_action('open','55555555-5555-4555-8555-555555555555');
 select public.story_action('stop','33333333-3333-4333-8333-333333333333');
 select public.story_action('stop','33333333-3333-4333-8333-333333333333');

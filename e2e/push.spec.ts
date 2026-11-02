@@ -48,7 +48,7 @@ test('enable, send test, disable and enable again on the current device', async 
   await page.getByRole('button', {name: 'Включить уведомления',exact: true}).click();
   await expect(page.getByText('На этом устройстве включены.')).toBeVisible();
   await page.getByRole('button', {name: 'Выйти из квартиры'}).click();
-  await expect(page.getByRole('button', {name: 'Войти в нашу квартиру →'})).toBeVisible();
+  await expect(page.getByRole('button', {name: 'Войти'})).toBeVisible();
   const logout = requests.indexOf('POST /auth/v1/logout');
   expect(requests[logout-1]).toBe('DELETE /rest/v1/push_subscriptions');
 });

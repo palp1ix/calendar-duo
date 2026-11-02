@@ -6,14 +6,15 @@ async function setup(page:Page,options:{active?:boolean;pending?:boolean}={}){
  const story={since:null as string|null,server_now:new Date().toISOString(),sessions:[] as any[],letters:[{id:'received',author:partner,body:'Ты — мой любимый человек.',created_at:new Date().toISOString(),opened_at:null as string|null}]};
  if(options.active||options.pending)story.sessions.push({id:'session',proposer:partner,requested_at:new Date().toISOString(),started_at:options.active?new Date(Date.now()-89*60000).toISOString():null,ends_at:options.active?new Date(Date.now()+11*3600000).toISOString():null});
  const shared=homeMock([]);const home=shared.snapshot();home.state.plants=[{id:'mint',name:'Мята',species:'mint',plantedAt:Date.now()-3600000,baseline:[],growth:0}];
- const calls:string[]=[];
+ const calls:string[]=[], memories:any[]=[];
  await page.addInitScript(uid=>localStorage.setItem('ustime.session',JSON.stringify({access_token:'mock',refresh_token:'mock',expires_at:Date.now()/1000+3600,user:{id:uid}})),uid);
  await page.route('**/*.supabase.co/**',async route=>{const req=route.request(),table=new URL(req.url()).pathname.split('/').at(-1);let result:any=[];
  if(table==='profiles')result=[{id:uid,slot:1,name:'Саша',hair:'#000000',outfit:'#76896a',hairstyle:'short',travel:35,prep:10,return_buffer:0,together_until:null},{id:partner,slot:2,name:'Маша',hair:'#f2d784',outfit:'#bd8271',hairstyle:'bob',travel:20,prep:10,return_buffer:0,together_until:null}];
  if(table==='get_home')result=home;
+ if(table==='memories'){if(req.method()==='POST'){memories.push({...req.postDataJSON(),id:'memory-1',created_at:new Date().toISOString()})}result=memories;}
  if(table==='story_action'){
  const {action,operation_id,payload}=req.postDataJSON();calls.push(action);
- if(action==='start')story.sessions.push({id:operation_id,proposer:uid,requested_at:new Date().toISOString(),started_at:null,ends_at:null});
+ if(action==='start')story.sessions.push({id:operation_id,proposer:uid,requested_at:new Date().toISOString(),started_at:new Date().toISOString(),ends_at:new Date(Date.now()+12*3600000).toISOString()});
  if(action==='accept'){const s=story.sessions.find(s=>s.id===operation_id);s.started_at=new Date().toISOString();s.ends_at=new Date(Date.now()+12*3600000).toISOString()}
  if(action==='stop'){const s=story.sessions.find(s=>s.id===operation_id);if(s.started_at)s.ends_at=new Date().toISOString();else s.cancelled_at=new Date().toISOString()}
  if(action==='since')story.since=payload.since;
@@ -23,9 +24,9 @@ async function setup(page:Page,options:{active?:boolean;pending?:boolean}={}){
  }
  await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(result)});
  });
- await page.goto('./');await expect(page.getByRole('heading',{name:/Хорошо, что есть/})).toBeVisible();return{story,calls};
+ await page.goto('./');await expect(page.getByRole('heading',{name:/Хорошо, что есть/})).toBeVisible();return{story,calls,memories};
 }
-test('starts only after partner confirmation, ends and persists, leaves and opens letters',async({page})=>{
+test('supports an old pending session, ends and persists, leaves and opens letters',async({page})=>{
  const {story}=await setup(page,{pending:true});
  await expect(page.getByRole('heading',{name:'Ждём второго «да»'})).toBeVisible();
  await page.getByRole('button',{name:'Да, мы вместе ♡',exact:true}).click();
@@ -34,7 +35,7 @@ test('starts only after partner confirmation, ends and persists, leaves and open
  await page.getByRole('button',{name:'Мы разошлись · сохранить время'}).click();await expect(page.getByRole('heading',{name:'Побудем рядом?'})).toBeVisible();
  await page.getByRole('button',{name:'✉ Оставить записку'}).click();await page.getByLabel('Твоя записка').fill('Встретим первый снег вместе?');await page.getByRole('button',{name:'Оставить под подушкой'}).click();
  await expect(page.getByRole('dialog')).toHaveCount(0);expect(story.letters).toHaveLength(2);await expect(page.getByText('Ждёт партнёра',{exact:true})).toBeVisible();
- await page.getByRole('button',{name:/Тебе записка/}).click();await expect(page.getByRole('dialog')).toContainText('Ты — мой любимый человек.');expect(story.letters[0].opened_at).toBeTruthy();
+ await expect(page.locator('.letter-envelope.unread')).toHaveCount(1);await page.getByRole('button',{name:/Тебе записка/}).click();await expect(page.getByRole('dialog')).toContainText('Ты — мой любимый человек.');expect(story.letters[0].opened_at).toBeTruthy();
  await page.getByRole('button',{name:'Закрыть',exact:true}).click();await page.reload();await expect(page.getByRole('button',{name:/Прочитать снова/})).toBeVisible();
 });
 test('live time opens decor before completion, achievements and mobile layout',async({page})=>{
@@ -49,8 +50,19 @@ test('live time opens decor before completion, achievements and mobile layout',a
  await page.getByRole('button',{name:'Время вместе',exact:true}).click();await expect(page.locator('.achievement')).toHaveCount(5);await expect(page.locator('.achievement').first()).toContainText('Открыто');
  await page.setViewportSize({width:1440,height:1000});await page.screenshot({path:'test-results/story-achievements-desktop.png',fullPage:true});
 });
-test('own invitation waits; date is shared and persists after reload',async({page})=>{
- const {story}=await setup(page);await page.getByRole('button',{name:'Мы сейчас вместе',exact:true}).click();await expect(page.getByRole('heading',{name:'Ждём второго «да»'})).toBeVisible();await expect(page.getByRole('button',{name:'Да, мы вместе ♡',exact:true})).toHaveCount(0);
+test('one person starts the timer; date is shared and persists after reload',async({page})=>{
+ const {story}=await setup(page);await page.getByRole('button',{name:'Мы сейчас вместе',exact:true}).click();await expect(page.locator('.together-card')).toContainText('МЫ СЕЙЧАС ВМЕСТЕ');await expect(page.getByRole('button',{name:'Мы разошлись · сохранить время'})).toBeVisible();
  await page.getByRole('button',{name:'Выбрать нашу дату'}).click();await page.getByLabel('Наша дата').fill('2026-09-01');await page.getByRole('button',{name:'Сохранить нашу дату'}).click();expect(story.since).toBe('2026-09-01');await page.reload();await expect(page.locator('.story-age')).toContainText('сентября');
  await page.setViewportSize({width:1440,height:1100});await page.screenshot({path:'test-results/story-home-desktop.png',fullPage:true});
+});
+
+test('saves a dated memory without a meeting',async({page})=>{
+ const {memories}=await setup(page);
+ await page.locator('.header nav').getByRole('button',{name:/История/}).click();
+ await page.getByRole('button',{name:'+ Воспоминание'}).click();
+ await page.getByLabel('Дата воспоминания').fill('2026-09-12');
+ await page.getByLabel('Что хочется запомнить').fill('Прогулка у озера');
+ await page.getByRole('button',{name:'Оставить в нашей истории'}).click();
+ await expect(page.getByText('Прогулка у озера')).toBeVisible();
+ expect(memories[0].meeting_id).toBeNull();expect(memories[0].memory_date).toBe('2026-09-12');
 });

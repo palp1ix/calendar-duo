@@ -44,3 +44,59 @@ dialog:has(.meeting-composer),dialog:has(.schedule-composer),dialog:has(.invite-
 @media(max-width:640px){.story-cards{grid-template-columns:1fr;gap:12px}.story-card,.letter-shelf{padding:19px 16px}.story-card h2{font-size:22px}.story-card p,.letter-shelf p{font-size:12px}.letter-list{grid-template-columns:1fr 1fr;gap:8px}.letter-envelope{padding:14px 10px}.letter-envelope>span{float:none;display:block;margin:0 0 10px}.letter-envelope b{font-size:11px}.letter-shelf>.secondary{width:100%}.achievement-filters{gap:6px}.achievement-filters button{font-size:11px;padding:9px 12px}.story-card button{min-height:44px;max-width:100%;font-size:12px}.story-card .eyebrow{font-size:9px}}
 
 .memory>.memory-photo{padding:0;min-width:0;aspect-ratio:16/10;background:#efeedf;overflow:hidden}.memory-photo img{display:block;width:100%;height:100%;object-fit:cover}.memory-photo .photo-placeholder{height:100%;min-height:180px;display:flex;flex-direction:column;justify-content:center;gap:12px}.memory-photo .text-button{min-height:44px}.memory-photo[aria-busy=true] .photo-placeholder{background:linear-gradient(115deg,#efeedf,#f8f5e9,#efeedf);background-size:200% 100%;animation:photo-shimmer 1.8s ease-in-out infinite}@keyframes photo-shimmer{to{background-position:-200% 0}}@media(prefers-reduced-motion:reduce){.memory-photo[aria-busy=true] .photo-placeholder{animation:none}}
+
+/* Interface polish: keep the pixel home as the visual focus. */
+:root{--muted:#686d60;--line:#dedfd3}
+h1,h2,h3{font-weight:600;letter-spacing:normal}
+h1{letter-spacing:-.04em}
+.eyebrow,.home-heading .eyebrow,.section-head .eyebrow,.section-head>.eyebrow,.login-story>.eyebrow,.login-card .eyebrow{font-size:11px;letter-spacing:0;text-transform:none;color:#626c59;font-weight:500}
+.muted,.intro{color:#62695c}
+.primary,.secondary{min-height:44px;padding:12px 20px;font-size:13px;border-radius:8px}
+.primary{background:#526b47;box-shadow:none;color:#fff}
+.secondary{color:#526745;background:#f6f6ef;border-color:#d1d8c9}
+.text-button{font-size:12px;color:#506b43}
+button{transition:background-color .18s ease-out,border-color .18s ease-out,color .18s ease-out,transform .18s ease-out}
+button:hover{filter:none}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #8d9e75;outline-offset:2px}
+.brand{font-weight:600;letter-spacing:-.04em}
+.brand-caption,.private-label{font-size:12px;color:#68705f}
+.header nav button{font-size:13px;color:#666e60}
+.header nav button.active{color:#435d39}
+.app main{padding-top:40px}
+.page-heading{margin-bottom:32px}
+.home-heading .primary{font-size:13px;padding:12px 20px}
+.intro{font-size:14px}
+.availability,.suggestions,.invitations,.next-card{padding:24px}
+.person-availability b,.person-availability p,.quick-availability,.quick-availability button,.suggestions>.muted,.suggestion-empty b,.suggestion-empty p,.suggestions>small,.invitation-empty p,.meeting-info p,.meeting-info small,.status-pill,.quiet-label,.next-card>p,.departure small,.next-card .card-foot{font-size:12px;color:#626b59}
+.quick-availability button{min-height:40px;padding:8px 12px}
+.countdown strong{font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.04em}
+.countdown span,.departure span{font-size:12px;color:#626b59}
+.login-layout{gap:64px;align-items:start;padding-top:48px}
+.login-story h1{font-weight:600;letter-spacing:-.04em}
+.login-story>p:not(.eyebrow){font-size:15px;color:#62695c}
+.login-card{margin-top:24px;padding:32px;box-shadow:none}
+.login-card h2{font-weight:600;letter-spacing:-.03em}
+.login-card>.muted,.login-security,.login-caption{font-size:12px;color:#68705f}
+.login-roles button,label,input,textarea,select{font-size:13px}
+.login-security{border-top-style:solid}
+.room-weather,.room-hint,.room-status,.location-caption,.home-level small,.next-reward small,.demo-room .home-level small,.demo-room .next-reward b,.demo-room .next-reward small{color:#625e4e}
+footer{font-size:11px;color:#6d7264}
+@media(max-width:640px){
+ .app main,.app main:has(.game-home){padding-left:16px;padding-right:16px}
+ .home-heading{padding:0}
+ .home-heading .primary{font-size:13px;max-width:none}
+ .login-layout{gap:24px;padding-top:32px}
+ .login-card{margin-top:0;padding:24px}
+ .login-story h1{letter-spacing:-.04em}
+ .login-caption{gap:12px}
+ .room-weather,.room-hint,.location-caption>span,.location-caption label{font-size:10px}
+}
+
+/* Incoming unread letters have a folded envelope and a gentle invitation to open. */
+.letter-envelope.unread{position:relative;overflow:hidden;background:#f6e9d4;border:2px solid #b57b63;color:#5b493f;animation:letter-nudge 5s ease-in-out infinite;transform-origin:50% 80%}
+.letter-envelope.unread:before{content:'';position:absolute;inset:0 0 auto;height:32%;background:#e6c5a8;clip-path:polygon(0 0,100% 0,50% 100%);pointer-events:none}
+.letter-envelope.unread>span,.letter-envelope.unread>b,.letter-envelope.unread>small{position:relative}
+.letter-envelope.unread>span{margin-top:12px;color:#a45e50}
+.letter-envelope.unread small{color:#74584a}
+@keyframes letter-nudge{0%,88%,100%{transform:rotate(0)} 90%,94%{transform:rotate(-1.5deg)} 92%,96%{transform:rotate(1.5deg)}}
+@media(prefers-reduced-motion:reduce){.letter-envelope.unread{animation:none}}

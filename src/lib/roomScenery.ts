@@ -59,7 +59,7 @@ export function drawScenery(ctx: CanvasRenderingContext2D, w: RoomWorld, reduced
 export function drawDecor(ctx: CanvasRenderingContext2D, w: RoomWorld, reduced: boolean) {
   const r=(x:number,y:number,width:number,height:number,c:string)=>{ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),width,height)};
   const damaged=(target:string)=>w.home.damage.some(d=>d.location===w.home.location&&d.target===target);
-  const positions: Record<ItemId, [number, number]> = {pumpkin:[348,255],ghost:[290,54],garland:[62,24],candles:[122,216],books:[80,254],cushion:[280,143]};
+  const positions: Record<ItemId, [number, number]> = {pumpkin:[348,255],ghost:[290,54],garland:[62,24],candles:[122,216],books:[80,254],cushion:[280,143],picture:[312,48],rug:[235,245],lantern:[410,64]};
   for(const id of w.home.items[w.home.location]) {
     const [x,y]=positions[id],broken=damaged(id);
     if(broken){r(x-6,y-2,8,3,'#a77756');r(x+5,y+2,6,3,'#c89e6a');r(x,y-5,4,3,'#6d6353');continue}
@@ -68,6 +68,9 @@ export function drawDecor(ctx: CanvasRenderingContext2D, w: RoomWorld, reduced: 
     if(id==='garland'){r(x,y,90,1,'#8d775e');for(let i=0;i<5;i++){const bx=x+5+i*18,by=y+5+(i%2)*4;r(bx,by,3,6,'#53504b');r(bx-5,by,13,2,'#53504b');r(bx-7,by-2,3,3,'#53504b');r(bx+6,by-2,3,3,'#53504b')}}
     if(id==='candles'){for(let i=0;i<3;i++){const cy=y-i%2*5;r(x+i*7,cy-14,5,15,'#e8d6b1');r(x+i*7+1,cy-19,3,5,'#f1c56b');r(x+i*7+2,cy-17,1,3,'#fff0bd')}}
     if(id==='books'){['#8b9c77','#b07c66','#d0b480'].forEach((c,i)=>{r(x-12+i%2*3,y-i*5,24,4,c);r(x-10+i%2*3,y-i*5+1,19,2,'#eee0ba')})}
+    if(id==='picture'){r(x-16,y-12,32,24,'#947458');r(x-13,y-9,26,18,'#e4d8ba');r(x-12,y+2,12,7,'#879a75');r(x-2,y-3,12,12,'#9bac8e');r(x+6,y-7,4,4,'#e8bf71')}
+    if(id==='rug'){r(x-28,y-8,56,16,'#ab7968');r(x-24,y-6,48,12,'#d2a989');r(x-16,y-2,32,3,'#ead7b6')}
+    if(id==='lantern'){r(x-1,y-22,2,10,'#776b59');r(x-9,y-12,18,19,'#dcb873');r(x-6,y-10,12,15,'#f1dfae');r(x-6,y+7,12,3,'#9a7756')}
     if(id==='cushion'){r(x-11,y-17,22,15,'#c88c57');r(x-8,y-15,16,11,'#dcab70');r(x-2,y-12,4,4,'#b6794b')}
   }
   if(damaged('sofa'))for(let i=0;i<4;i++)r(260+i*4,141-i*2,2,13,'#665848');
