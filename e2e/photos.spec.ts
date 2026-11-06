@@ -45,3 +45,35 @@ test('compresses new photos before upload and shows the uploaded image from memo
  expect(uploads).toHaveLength(1);expect(uploads[0].type).toBe('image/webp');expect(uploads[0].bytes.length).toBeLessThan(input.length);
  const image=page.locator('.memory-photo img');await expect(image).toBeVisible();await expect(image).toHaveJSProperty('naturalWidth',1600);expect(downloads).toHaveLength(0);
 });
+
+test('memory composer supports quick dates, photo preview, details and retry on mobile',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ const {memories}=await setup(page,{count:0});await history(page);
+ await page.getByRole('button',{name:'+ Воспоминание'}).click();
+ const dialog=page.getByRole('dialog'),save=dialog.getByRole('button',{name:'Оставить в нашей истории'});
+ await expect(save).toBeDisabled();
+ await dialog.getByLabel('Что хочется запомнить').fill('   ');await expect(save).toBeDisabled();
+ await dialog.getByLabel('Что хочется запомнить').fill('  Тёплый вечер у озера  ');
+ await dialog.getByRole('button',{name:'Вчера',exact:true}).click();
+ const date=await dialog.getByLabel('Дата воспоминания').inputValue();
+ await expect(dialog.getByLabel('Название этого эпизода')).not.toBeVisible();
+ await dialog.getByLabel('Фото (JPG, PNG, WebP до 5 МБ)').setInputFiles({name:'bad.txt',mimeType:'text/plain',buffer:Buffer.from('text')});
+ await expect(dialog.getByRole('alert')).toContainText('Выберите JPG');
+ await dialog.getByLabel('Фото (JPG, PNG, WebP до 5 МБ)').setInputFiles({name:'photo.png',mimeType:'image/png',buffer:pixel});
+ await expect(dialog.getByAltText('Выбранное фото воспоминания')).toBeVisible();
+ await dialog.getByRole('button',{name:'Убрать фото'}).click();
+ await expect(dialog.getByAltText('Выбранное фото воспоминания')).toHaveCount(0);
+ await dialog.locator('summary').click();
+ await dialog.getByLabel('Название этого эпизода').fill('У озера');
+ await dialog.getByLabel('Любимый момент').fill('Смотрели на уток');
+ await dialog.getByLabel('Связать со встречей').selectOption('m');
+ await dialog.locator('summary').click();
+ await page.screenshot({path:'/tmp/calendar-duo-memory-mobile.png'});
+ let fail=true;
+ await page.route('**/rest/v1/memories?*',route=>route.fallback());
+ await page.route('**/rest/v1/memories',async route=>{if(fail&&route.request().method()==='POST'){fail=false;await route.fulfill({status:503,json:{message:'Unavailable'}})}else await route.fallback()});
+ await save.click();await expect(dialog.getByRole('alert')).toContainText('Всё осталось в форме');
+ await expect(dialog.getByLabel('Что хочется запомнить')).toHaveValue('  Тёплый вечер у озера  ');
+ await save.click();await expect(dialog).toHaveCount(0);
+ expect(memories[0]).toMatchObject({note:'Тёплый вечер у озера',label:'У озера',moment:'Смотрели на уток',memory_date:date,meeting_id:'m',photo:null});
+});

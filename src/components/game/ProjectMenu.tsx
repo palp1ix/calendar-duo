@@ -1,4 +1,4 @@
-import {useId,useRef,useState} from 'react';
+import {useEffect,useId,useRef,useState} from 'react';
 import {catalog, homeUnits, locations, type HomeLife, type Location} from '../../lib/roomLife';
 import {projects,projectComplete,projectReady,projectUnlock,type HomeProject} from '../../lib/game/projects';
 import PixelIcon from '../PixelIcon';
@@ -6,15 +6,17 @@ import {KitchenPreview} from './KitchenProject';
 export default function ProjectMenu({home,busy,demo,onChoose}:{home:HomeLife;busy:boolean;demo:boolean;onChoose:(project:HomeProject)=>Promise<boolean>}){
  const [open,setOpen]=useState(false),[filter,setFilter]=useState<Location|'all'>('all'),[selected,setSelected]=useState<HomeProject|null>(null),[working,setWorking]=useState(false);
  const id=useId(),strip=useRef<HTMLDivElement>(null),list=projects.filter(p=>filter==='all'||p.location===filter);
+ const [retained,setRetained]=useState(false);
+ useEffect(()=>{if(open){setRetained(true);return}const timer=setTimeout(()=>setRetained(false),280);return()=>clearTimeout(timer)},[open]);
  const finished=projects.filter(p=>projectComplete(home,p)).length;
  async function choose(project:HomeProject){if(working)return;setWorking(true);try{if(await onChoose(project)){setOpen(false);setSelected(null)}}finally{setWorking(false)}}
- return <section className="project-menu" aria-label="Проекты дома">
-  <button className="project-menu-toggle" aria-expanded={open} aria-controls={id} onClick={()=>setOpen(v=>!v)}><PixelIcon name="home"/><span><b>Проекты дома <small>{projects.length} вариантов</small></b><span>{finished?`Готово ${finished} из ${projects.length} · выберите, что создадим дальше`:'Выберите, что создадим: кухню, уютную комнату или сад'}</span></span><span aria-hidden="true">{open?'⌃':'⌄'}</span></button>
-  {open&&<div id={id} className="project-dropdown">
+ return <section className={"project-menu"+(open?" is-open":"")} aria-label="Проекты дома">
+  <button className="project-menu-toggle" aria-expanded={open} aria-controls={id} onClick={()=>setOpen(v=>!v)}><PixelIcon name="home"/><span><b>Проекты дома <small>{projects.length} вариантов</small></b><span>{finished?`Готово ${finished} из ${projects.length} · выберите, что создадим дальше`:'Выберите, что создадим: кухню, уютную комнату или сад'}</span></span><span aria-hidden="true">{open?'⌄':'⌃'}</span></button>
+  <div className="project-reveal" aria-hidden={!open}><div className="project-reveal-inner">{(open||retained)&&<div id={id} className="project-dropdown">
    <div className="project-menu-tools"><div className="project-filters" role="group" aria-label="Где обустраиваем">{([{id:'all',name:'Все проекты'},...locations] as {id:Location|'all';name:string}[]).map(l=><button key={l.id} aria-pressed={filter===l.id} onClick={()=>{setFilter(l.id);setSelected(null);strip.current?.scrollTo({left:0})}}>{l.name}</button>)}</div><div className="project-scroll-buttons"><button aria-label="Предыдущие проекты" onClick={()=>strip.current?.scrollBy({left:-280})}>←</button><button aria-label="Следующие проекты" onClick={()=>strip.current?.scrollBy({left:280})}>→</button></div></div>
    <p className="project-menu-hint">Листайте по горизонтали · выберите карточку, чтобы увидеть состав</p>
    <div ref={strip} className="project-carousel" role="group" aria-label="Лента проектов" tabIndex={0}>{list.map(p=>{const done=projectComplete(home,p),available=projectReady(home,p);return <button key={p.id} className="project-card" aria-pressed={selected?.id===p.id} onClick={()=>setSelected(p)}>{p.kind==='kitchen'?<KitchenPreview/>:<span className={'project-art project-art-'+p.location}><PixelIcon name={p.icon} size={48}/>{p.items.length>0&&<span className="project-miniatures">{p.items.map(item=><PixelIcon key={item} name={item} size={24}/>)}</span>}</span>}<small>{locations.find(l=>l.id===p.location)!.name} · {p.kind==='garden'?'Растение':p.kind==='kitchen'?'Строительство':'Набор обустройства'}</small><b>{p.name}</b><span>{p.note}</span><strong>{done?'Уже в вашем доме':available?'Доступно сейчас':`От ${projectUnlock(p)*100} искр`}</strong></button>})}</div>
    {selected&&<div className="project-details" aria-live="polite"><div><small>Результат проекта</small><h3>{selected.name}</h3><p>{selected.result}</p>{selected.items.length>0&&<p className="project-includes">{selected.items.map(item=>catalog.find(i=>i.id===item)!.name).join(' · ')}. Предметы добавятся к обстановке; уже размещённые останутся на месте.</p>}{!projectReady(home,selected)&&<p>Нужно ещё {Math.max(0,Math.ceil((projectUnlock(selected)-(home.progressValue??homeUnits(home)))*100))} искр. Они появляются от встреч и времени вместе.</p>}{demo&&selected.kind==='decor'&&<p>Войдите в дом, чтобы сохранять обустройство.</p>}</div><button className="primary" disabled={busy||working||!projectReady(home,selected)||(demo&&selected.kind==='decor')||(selected.kind==='decor'&&projectComplete(home,selected))} onClick={()=>void choose(selected)}>{working?'Обустраиваем…':selected.kind==='kitchen'?'Примерить кухню':selected.kind==='garden'?'Выбрать имя и посадить':projectComplete(home,selected)?'Уже обустроено':'Обустроить по проекту'}</button></div>}
-  </div>}
+  </div>}</div></div>
  </section>
 }

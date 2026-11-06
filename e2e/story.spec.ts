@@ -66,3 +66,11 @@ test('saves a dated memory without a meeting',async({page})=>{
  await expect(page.getByText('Прогулка у озера')).toBeVisible();
  expect(memories[0].meeting_id).toBeNull();expect(memories[0].memory_date).toBe('2026-09-12');
 });
+
+test('a current accepted meeting shows elapsed time instead of manual start',async({page})=>{
+ await setup(page);
+ await page.route('**/rest/v1/meetings?**',route=>route.fulfill({json:[{id:'ongoing',status:'accepted',start_at:new Date(Date.now()-42*60000).toISOString(),end_at:new Date(Date.now()+30*60000).toISOString(),place:'Дома'}]}));
+ await page.reload();
+ await expect(page.locator('.scheduled-together')).toContainText('0 ч 42 мин');
+ await expect(page.getByRole('button',{name:'Мы сейчас вместе',exact:true})).toHaveCount(0);
+});

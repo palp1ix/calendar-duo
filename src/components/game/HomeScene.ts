@@ -182,6 +182,7 @@ export function startHomeGame(parent: HTMLElement, bridge: SceneBridge) {
   return new Phaser.Game({
     type: Phaser.AUTO, parent, width: 480, height: 300, backgroundColor: '#e9dfc8',
     pixelArt: true, antialias: false, banner: false, audio: {noAudio: true},
+    input: {touch: {capture: false}},
     fps: {target: 30, forceSetTimeOut: false},
     scale: {mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH},
     scene: new HomeScene(bridge),

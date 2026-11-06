@@ -117,3 +117,24 @@ test('mobile catalog explains the result, placement can be cancelled, greenhouse
   await page.locator('.room-scene').screenshot({path:'test-results/outdoor-greenhouse.png'});
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
+
+test('swiping bare canvas pans the room and projects stay below the scene',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await apartment(page,{completed:3});
+ const canvas=page.locator('canvas');await expect(canvas).toBeVisible();
+ const scroll=page.locator('.scene-scroll');
+ await scroll.scrollIntoViewIfNeeded();
+ const box=(await canvas.boundingBox())!;
+ const before=await scroll.evaluate(el=>el.scrollLeft);
+ const cdp=await page.context().newCDPSession(page);
+ const y=box.y+box.height*.9;
+ await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:280,y}]});
+ for(let x=260;x>=80;x-=20)await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x,y}]});
+ await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+ await expect.poll(()=>scroll.evaluate(el=>el.scrollLeft)).toBeGreaterThan(before+30);
+ await page.getByRole('button',{name:'Играть на весь экран'}).click();
+ await page.getByRole('button',{name:/Проекты дома/}).click();
+ const scene=(await page.locator('.room-scene').boundingBox())!;
+ const menu=(await page.locator('.project-menu').boundingBox())!;
+ expect(menu.y).toBeGreaterThanOrEqual(scene.y+scene.height);
+});
