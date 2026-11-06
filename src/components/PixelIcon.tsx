@@ -3,7 +3,12 @@ export default function PixelIcon({name,size=24}:{name:string;size?:number}){
  const r=(x:number,y:number,w:number,h:number,c:keyof typeof colors,key?:number)=><rect key={key} x={x} y={y} width={w} height={h} fill={colors[c]}/>;
  const plant=['marigold','cactus','mint','fern','lavender','monstera','chamomile','rosemary','sunflower'].includes(name);
  let art;
- if(plant)art=<>
+ if(['sakura','lemon-tree','japanese-maple'].includes(name))art=<>{r(5,13,7,3,'earth')}{r(7,5,2,9,'earth')}{r(2,3,12,6,name==='sakura'?'pink':name==='japanese-maple'?'earth':'leaf')}{r(4,1,8,10,name==='sakura'?'pink':name==='japanese-maple'?'earth':'leaf')}{r(3,4,2,2,name==='lemon-tree'?'gold':'cream')}{r(10,6,2,2,name==='lemon-tree'?'gold':'light')}</>;
+ else if(name==='television')art=<>{r(1,2,14,10,'ink')}{r(2,3,12,8,'leaf')}{r(3,4,5,6,'light')}{r(7,12,2,2,'ink')}{r(4,14,8,1,'earth')}</>;
+ else if(name==='playstation')art=<>{r(8,1,4,12,'cream')}{r(9,2,2,11,'ink')}{r(7,12,6,2,'earth')}{r(1,9,6,4,'cream')}{r(2,10,2,1,'ink')}{r(5,10,1,1,'leaf')}</>;
+ else if(name==='burger-machine')art=<>{r(3,1,10,15,'earth')}{r(4,2,8,3,'gold')}{r(4,6,6,7,'ink')}{r(5,7,4,2,'gold')}{r(5,9,4,1,'leaf')}{r(5,10,4,2,'earth')}{r(11,7,1,2,'gold')}{r(5,14,6,1,'ink')}</>;
+ else if(name==='king-bed')art=<>{r(1,3,14,11,'earth')}{r(2,4,12,9,'pink')}{r(3,5,4,3,'cream')}{r(9,5,4,3,'cream')}{r(2,10,12,3,'light')}{r(1,14,2,2,'ink')}{r(13,14,2,2,'ink')}</>;
+ else if(plant)art=<>
   {r(4,12,8,3,'earth')}{r(3,11,10,2,'gold')}{r(7,4,2,7,'leaf')}
   {name==='cactus'?<>{r(5,3,6,8,'leaf')}{r(2,5,3,4,'leaf')}{r(2,3,2,5,'leaf')}{r(11,7,3,3,'leaf')}{r(12,5,2,5,'leaf')}{r(7,4,1,6,'light')}</>:<>
    {r(2,6,5,3,'leaf')}{r(9,4,5,3,'light')}{r(3,4,3,2,'light')}

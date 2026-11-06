@@ -1,3 +1,4 @@
+import {advanceKitchen} from '../../src/lib/game/construction';
 import {newHome,syncMeetings,createPlant,toggleItem,growPlants,type HomeLife,type Location,type PlantId,type ItemId} from '../../src/lib/roomLife';
 import type {Meeting} from '../../src/types';
 export function homeMock(meetings:Record<string,unknown>[]){
@@ -6,7 +7,8 @@ export function homeMock(meetings:Record<string,unknown>[]){
  function change(body:{operation_id:string;payload:any}){
   const key=JSON.stringify(body.payload),seen=operations.get(body.operation_id);if(seen){if(seen!==key)throw new Error('Operation ID already used');return snapshot()}
   snapshot();const p=body.payload,location=(p.location||'living') as Location;state.location=location;
-  if(p.kind==='plant'){if(!createPlant(state,p.species as PlantId,p.name,Date.now(),body.operation_id))throw new Error('Посадка недоступна')}
+  if(p.kind==='build'){if(!advanceKitchen(state,p.stage,p.style))throw new Error('Строительство недоступно')}
+  else if(p.kind==='plant'){if(!createPlant(state,p.species as PlantId,p.name,Date.now(),body.operation_id))throw new Error('Посадка недоступна')}
   else if(p.kind==='place'){const items=state.items[location];if(items.includes(p.target)!==p.placed&&!toggleItem(state,p.target as ItemId))throw new Error('Украшение закрыто')}
   else if(p.kind==='repair'){state.damage=state.damage.filter(d=>!(d.id===p.target&&d.location===location));state.lastEvent='Всё починено. Кошка смотрит с неодобрением и строит планы.'}
   else if(p.kind==='import'){for(const plant of p.plants as HomeLife['plants'])if(!state.plants.some(s=>s.id===plant.id))state.plants.push(plant);growPlants(state)}

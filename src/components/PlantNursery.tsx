@@ -2,8 +2,8 @@ import {useState} from 'react';
 import Modal from './Modal';
 import PixelIcon from './PixelIcon';
 import {canEnter,homeUnits,plantCapacity,seeds,type HomeLife,type PlantId} from '../lib/roomLife';
-export default function PlantNursery({home,onCreate,onClose}:{home:HomeLife;onCreate:(species:PlantId,name:string)=>Promise<boolean>;onClose:()=>void}){
- const [species,setSpecies]=useState<PlantId>('marigold'),[name,setName]=useState(''),[error,setError]=useState(''),[busy,setBusy]=useState(false);
+export default function PlantNursery({home,onCreate,onClose,initialSpecies}:{initialSpecies?:PlantId;home:HomeLife;onCreate:(species:PlantId,name:string)=>Promise<boolean>;onClose:()=>void}){
+ const [species,setSpecies]=useState<PlantId>(initialSpecies??'marigold'),[name,setName]=useState(''),[error,setError]=useState(''),[busy,setBusy]=useState(false);
  const count=homeUnits(home),selected=seeds.find(s=>s.id===species)!,full=home.plants.length>=plantCapacity(count),allowed=canEnter(home,'greenhouse')&&home.location==='greenhouse';
  return <Modal title="Посадим что-нибудь наше" onClose={onClose}><form className="plant-nursery" onSubmit={async e=>{e.preventDefault();if(busy)return;setBusy(true);setError('');try{if(await onCreate(species,name))onClose();else setError('Не удалось подтвердить посадку. Имя сохранено — попробуй ещё раз.')}finally{setBusy(false)}}}>
   <p className="nursery-intro">Маленький житель вашей оранжереи. Выбери вид и придумай ему имя.</p>

@@ -1,7 +1,7 @@
 import * as api from './api';
 import type {HomeLife,Location} from './roomLife';
 export type HomeSnapshot={revision:number;state:HomeLife};
-export type HomeOperation={kind:'plant'|'place'|'repair'|'import';location?:Location;species?:string;name?:string;target?:string;placed?:boolean;plants?:HomeLife['plants'];items?:HomeLife['items']};
+export type HomeOperation={kind:'plant'|'place'|'repair'|'import'|'build';location?:Location;species?:string;name?:string;target?:string;placed?:boolean;stage?:number;style?:'sage'|'clay';plants?:HomeLife['plants'];items?:HomeLife['items']};
 let location:Location|null='living';
 export function setHomeLocation(value:Location|null){location=value}
 export function newerHome(current:HomeSnapshot|null,incoming:HomeSnapshot|null){return incoming&&(!current||incoming.revision>=current.revision)?incoming:current}

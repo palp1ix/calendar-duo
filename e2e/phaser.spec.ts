@@ -1,0 +1,119 @@
+import {test,expect} from '@playwright/test';
+import {apartment} from './fixtures/apartment';
+
+test('Phaser starts, kitchen builds in earned stages and survives reload',async({page})=>{
+  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+  const {shared,meetings}=await apartment(page);
+  await expect(page.locator('canvas[data-engine="phaser"]')).toBeVisible();
+  const project=page.getByRole('region',{name:'Строительство кухни'});
+  await expect(project.getByRole('heading')).toHaveText('Что создадим вместе?');
+  await expect(project.getByRole('button',{name:/терракота/i})).toHaveCount(0);
+  await page.getByRole('button',{name:/Проекты дома/}).click();
+  await page.getByRole('group',{name:'Лента проектов'}).getByRole('button',{name:/Кухня для двоих/}).click();
+  await page.getByRole('button',{name:'Примерить кухню',exact:true}).click();
+  await project.getByRole('button',{name:'Тёплые · терракота',exact:true}).click();
+  await expect(project.getByRole('button',{name:'Заложить основу'})).toHaveCount(0);
+  await page.getByRole('button',{name:'Подтвердить место кухни у левой стены'}).click();
+  await project.getByRole('button',{name:'Заложить основу'}).click();
+  await expect(project.getByRole('heading')).toHaveText('Основа готова');
+  await expect(project.getByRole('button',{name:'Построить стены'})).toBeDisabled();
+  expect(shared.state.kitchen).toEqual({stage:1,style:'clay'});
+  meetings.push({id:'earned-1',status:'completed'});
+  await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
+  await expect(project.getByRole('button',{name:'Построить стены'})).toBeEnabled();
+  await project.getByRole('button',{name:'Построить стены'}).click();
+  await expect(project.getByRole('heading')).toHaveText('Стены и окно');
+  meetings.push({id:'earned-2',status:'completed'});
+  await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
+  await expect(project.getByRole('button',{name:'Обустроить кухню'})).toBeEnabled();
+  await project.getByRole('button',{name:'Обустроить кухню'}).click();
+  await expect(project.getByRole('heading')).toHaveText('Наша первая кухня');
+  await page.reload();
+  await expect(project.getByRole('heading')).toHaveText('Наша первая кухня');
+  await project.getByRole('button',{name:'Первый чай на кухне'}).click();
+  await expect(page.locator('.actor-speech')).toBeVisible();
+  await page.screenshot({path:'test-results/phaser-kitchen.png',fullPage:true});
+  expect(errors).toEqual([]);
+});
+
+test('desktop native fullscreen enters and exits with Escape',async({page})=>{
+  await page.addInitScript(()=>{
+    (window as any).orientationCalls=[];
+    Object.defineProperty(screen.orientation,'lock',{value:async(value:string)=>{(window as any).orientationCalls.push(value)},configurable:true});
+    Object.defineProperty(screen.orientation,'unlock',{value:()=>{(window as any).orientationCalls.push('unlock')},configurable:true});
+  });
+  await page.setViewportSize({width:1440,height:900});
+  await apartment(page,{completed:3});
+  await expect(page.locator('canvas[data-engine="phaser"]')).toBeVisible();
+  await page.getByRole('button',{name:'Играть на весь экран'}).click();
+  const game=page.getByRole('dialog',{name:'Наш дом — игровой режим'});
+  await expect(game).toBeVisible();
+  await expect.poll(()=>page.evaluate(()=>!!document.fullscreenElement)).toBe(true);
+  await expect.poll(()=>page.evaluate(()=>(window as any).orientationCalls)).toContain('landscape');
+  const bounds=await game.boundingBox();expect(bounds?.width).toBe(1440);
+  await page.screenshot({path:'test-results/phaser-fullscreen-desktop.png'});
+  await page.keyboard.press('Escape');
+  await expect(game).not.toBeVisible();
+  await expect.poll(()=>page.evaluate(()=>!!document.fullscreenElement)).toBe(false);
+  await expect(page.getByRole('button',{name:'Играть на весь экран'})).toBeFocused();
+  expect(await page.evaluate(()=>(window as any).orientationCalls)).toContain('unlock');
+});
+
+test('mobile fallback supports portrait, landscape and exit without page overflow',async({page})=>{
+  await page.addInitScript(()=>Object.defineProperty(Element.prototype,'requestFullscreen',{value:undefined,configurable:true}));
+  await page.setViewportSize({width:390,height:844});
+  await apartment(page,{completed:3});
+  await expect(page.locator('canvas[data-engine="phaser"]')).toBeVisible();
+  await page.getByRole('button',{name:'Играть на весь экран'}).click();
+  const game=page.getByRole('dialog',{name:'Наш дом — игровой режим'});
+  await expect(game.getByText(/Поверните телефон горизонтально/)).toBeVisible();
+  await page.setViewportSize({width:844,height:390});
+  await expect(game.getByText(/Поверните телефон горизонтально/)).not.toBeVisible();
+  const canvas=page.locator('canvas'),bounds=(await canvas.boundingBox())!;
+  expect(bounds.height).toBeGreaterThan(120);expect(bounds.y+bounds.height).toBeLessThanOrEqual(390);
+  expect(await game.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true);
+  await page.screenshot({path:'test-results/phaser-fullscreen-mobile.png'});
+  await game.getByRole('button',{name:'Выйти из полного экрана'}).click();
+  await expect(game).not.toBeVisible();
+  expect(await page.evaluate(()=>document.body.style.overflow)).not.toBe('hidden');
+});
+
+test('all available stages build together and survive reload',async({page})=>{
+  await page.setViewportSize({width:1280,height:900});
+  const {shared}=await apartment(page,{completed:2});
+  const project=page.getByRole('region',{name:'Строительство кухни'});
+  await page.getByRole('button',{name:/Проекты дома/}).click();
+  await page.getByRole('group',{name:'Лента проектов'}).getByRole('button',{name:/Кухня для двоих/}).click();
+  await page.getByRole('button',{name:'Примерить кухню',exact:true}).click();
+  await page.screenshot({path:'test-results/construction-ghost.png',fullPage:true});
+  await page.getByRole('button',{name:'Подтвердить место кухни у левой стены'}).click();
+  await project.getByRole('radio',{name:'Все доступные подряд'}).check();
+  await project.getByRole('button',{name:'Построить доступные этапы'}).click();
+  await expect(project.getByRole('heading')).toHaveText('Наша первая кухня');
+  expect(shared.state.kitchen).toEqual({stage:3,style:'sage'});
+  expect(shared.operations.size).toBe(3);
+  await page.reload();
+  await expect(project.getByRole('heading')).toHaveText('Наша первая кухня');
+});
+
+test('mobile catalog explains the result, placement can be cancelled, greenhouse is outdoors',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  const {shared,meetings}=await apartment(page);
+  const project=page.getByRole('region',{name:'Строительство кухни'});
+  await page.screenshot({path:'test-results/construction-catalog-mobile.png',fullPage:true});
+  await page.getByRole('button',{name:/Проекты дома/}).click();
+  await page.getByRole('group',{name:'Лента проектов'}).getByRole('button',{name:/Кухня для двоих/}).click();
+  await page.getByRole('button',{name:'Примерить кухню',exact:true}).click();
+  const ghost=page.getByRole('button',{name:'Подтвердить место кухни у левой стены'});
+  await expect(ghost).toBeInViewport();
+  await project.getByRole('button',{name:'Назад к проектам'}).click();
+  await expect(ghost).toHaveCount(0);
+  expect(shared.operations.size).toBe(0);
+  meetings.push(...[1,2,3].map(i=>({id:`garden-${i}`,status:'completed'})));
+  await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
+  await page.getByRole('group',{name:'Комнаты'}).getByRole('button',{name:'Оранжерея'}).click();
+  await expect(page.getByText('Отдельная теплица во дворе · выращиваем растения под стеклом')).toBeVisible();
+  await expect(page.getByRole('button',{name:'Окно',exact:true})).toHaveCount(0);
+  await page.locator('.room-scene').screenshot({path:'test-results/outdoor-greenhouse.png'});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});

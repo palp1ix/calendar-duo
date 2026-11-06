@@ -49,3 +49,29 @@ test('lost planting response retries the same operation and preserves the name',
  await page.getByRole('dialog').getByRole('button',{name:'Посадить «Единственный»'}).click();await expect(page.getByRole('dialog')).toHaveCount(0);
  expect(server.state.plants).toHaveLength(1);expect(server.operations.size).toBe(1);await expect(page.getByRole('progressbar',{name:'Рост: Единственный'})).toBeVisible();await context.close();
 });
+
+test('two participants build the same kitchen and recover a lost building response',async({browser})=>{
+ const meetings:Record<string,unknown>[]=[],server=homeMock(meetings),drop={next:false};
+ const a=await browser.newContext({viewport:{width:844,height:390}}),b=await browser.newContext({viewport:{width:390,height:844}});
+ const first=await connect(a,one,server,meetings,drop),second=await connect(b,two,server,meetings);
+ const firstProject=first.getByRole('region',{name:'Строительство кухни'}),secondProject=second.getByRole('region',{name:'Строительство кухни'});
+ await first.getByRole('button',{name:/Проекты дома/}).click();
+ await first.getByRole('group',{name:'Лента проектов'}).getByRole('button',{name:/Кухня для двоих/}).click();
+ await first.getByRole('button',{name:'Примерить кухню',exact:true}).click();
+ await firstProject.getByRole('button',{name:'Тёплые · терракота',exact:true}).click();
+ await first.getByRole('button',{name:'Подтвердить место кухни у левой стены'}).click();drop.next=true;
+ await firstProject.getByRole('button',{name:'Заложить основу'}).click();
+ await expect(first.getByRole('button',{name:'Повторить действие'})).toBeVisible();
+ await first.getByRole('button',{name:'Повторить действие'}).click();
+ await expect(firstProject.getByRole('heading')).toHaveText('Основа готова');
+ expect(server.operations.size).toBe(1);expect(server.state.kitchen).toEqual({stage:1,style:'clay'});
+ await second.clock.fastForward(8500);
+ await expect(secondProject.getByRole('heading')).toHaveText('Основа готова');
+ meetings.push({id:'together-earned',status:'completed'});
+ await second.clock.fastForward(8500);
+ await secondProject.getByRole('button',{name:'Построить стены'}).click();
+ await first.clock.fastForward(8500);
+ await expect(firstProject.getByRole('heading')).toHaveText('Стены и окно');
+ expect(server.state.kitchen).toEqual({stage:2,style:'clay'});
+ await a.close();await b.close();
+});
