@@ -31,6 +31,7 @@ jobs:
         with:
           path: dist
   deploy:
+    timeout-minutes: 25
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -40,3 +41,6 @@ jobs:
       - name: Publish
         id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          timeout: 1200000
+          reporting_interval: 10000
