@@ -77,3 +77,18 @@ test('memory composer supports quick dates, photo preview, details and retry on 
  await save.click();await expect(dialog).toHaveCount(0);
  expect(memories[0]).toMatchObject({note:'Тёплый вечер у озера',label:'У озера',moment:'Смотрели на уток',memory_date:date,meeting_id:'m',photo:null});
 });
+
+test('memory dialog never scrolls horizontally',async({page})=>{
+ await setup(page,{count:0});await history(page);await page.getByRole('button',{name:'+ Воспоминание'}).click();
+ const dialog=page.getByRole('dialog');
+ for(const width of [320,375,390,768,1280]){
+  await page.setViewportSize({width,height:844});
+  await dialog.locator('summary').click();
+  await dialog.getByLabel('Что хочется запомнить').fill('Длинноеслово'.repeat(100));
+  expect(await dialog.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true);
+  expect(await dialog.getByLabel('Что хочется запомнить').evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true);
+  await dialog.evaluate(el=>{el.scrollLeft=100});
+  expect(await dialog.evaluate(el=>el.scrollLeft)).toBe(0);
+  await dialog.locator('summary').click();
+ }
+});

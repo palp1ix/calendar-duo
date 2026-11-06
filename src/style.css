@@ -191,3 +191,14 @@ dialog:has(.memory-composer){width:520px;padding:24px;background:#fdfbf4}
 .memory-save>p:not(.form-error){text-align:center;color:#737b69;font-size:11px;margin:0 0 10px}
 .memory-save .primary{font-size:14px;min-height:48px}
 @media(max-width:640px){dialog:has(.memory-composer){padding:20px 16px;max-height:calc(100dvh - 24px)}.memory-composer input,.memory-composer textarea,.memory-composer select{font-size:16px}.memory-date-row{flex-wrap:wrap;gap:8px}.memory-date-row label{flex-basis:100%}.memory-date-shortcuts{width:100%}.memory-date-shortcuts button{flex:1}.memory-save{bottom:-20px;margin-bottom:-20px;padding-bottom:max(20px,env(safe-area-inset-bottom))}}
+/* Keep native controls and long content inside the memory sheet on mobile. */
+dialog:has(.memory-composer){overflow-x:hidden;overscroll-behavior-x:none}
+.memory-composer{position:relative;width:100%;min-width:0;max-width:100%;overflow-wrap:anywhere}
+.memory-composer label,.memory-composer .memory-fields,.memory-extras,.memory-extras>div{min-width:0;max-width:100%}
+.memory-composer input,.memory-composer textarea,.memory-composer select{max-width:100%;box-sizing:border-box}
+.memory-composer textarea{white-space:pre-wrap;overflow-wrap:anywhere;overflow-x:hidden}
+.memory-composer input[type=date]{display:block;min-inline-size:0;inline-size:100%}
+.memory-composer input[type=date]::-webkit-date-and-time-value{text-align:left;min-width:0}
+.memory-composer .memory-file-input{left:0;top:0;min-width:0;min-height:0;width:1px;height:1px;border:0}
+.memory-add-photo>span:last-child{min-width:0}
+.memory-photo-selection>div,.memory-photo-selection>div>div{display:flex;flex-wrap:wrap;gap:8px}
